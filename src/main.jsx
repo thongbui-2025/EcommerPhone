@@ -14,6 +14,8 @@ import PurchaseHistory from "./components/PurchaseHistory";
 import UserLayout from "./layout/UserLayOut.jsx";
 import AdminLayout from "./layout/AdminLayout.jsx";
 import Payment from "./components/Payment/index.jsx";
+import AdminPage from "./pages/admin/AdminPage.jsx";
+import LoginPage from "./pages/admin/LoginPage.jsx";
 
 const router = createBrowserRouter([
 	{
@@ -51,7 +53,16 @@ const router = createBrowserRouter([
 	},
 	{
 		element: <AdminLayout />,
-		children: [{}],
+		children: [
+			{
+				path: "/admin",
+				element: <AdminPage />,
+			},
+			{
+				path: "login/admin",
+				element: <LoginPage />,
+			},
+		],
 	},
 	{
 		element: <AuthLayout />,
