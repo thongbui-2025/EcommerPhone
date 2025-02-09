@@ -4,12 +4,28 @@ import CreateCategory from "../../admin_components/CategoryManagement/CreateCate
 import UpdateCategory from "../../admin_components/CategoryManagement/UpdateCategory";
 import axios from "axios";
 
+const ITEMS_PER_PAGE = 10;
 const CategoryManagement = () => {
 	const [showCreateForm, setShowCreateForm] = useState(false);
 	const [categoryToUpdate, setCategoryToUpdate] = useState(null);
 	const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
 	const [categoryToDelete, setCategoryToDelete] = useState(null);
 	const [categories, setCategories] = useState([]);
+
+	const [currentPage, setCurrentPage] = useState(1);
+	const totalPages = Math.ceil(categories.length / ITEMS_PER_PAGE);
+
+	const handlePageChange = (newPage) => {
+		if (newPage >= 1 && newPage <= totalPages) {
+			setCurrentPage(newPage);
+		}
+	};
+
+	const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+	const displayedCategories = categories.slice(
+		startIndex,
+		startIndex + ITEMS_PER_PAGE
+	);
 
 	useEffect(() => {
 		axios
@@ -116,7 +132,7 @@ const CategoryManagement = () => {
 								<thead>
 									<tr className="bg-gray-50">
 										<th className="border p-3 text-left">
-											ID
+											STT
 										</th>
 										<th className="border p-3 text-left">
 											Tên
@@ -127,63 +143,81 @@ const CategoryManagement = () => {
 									</tr>
 								</thead>
 								<tbody>
-									{categories.map((category) => (
-										<tr
-											key={category.id}
-											className="hover:bg-gray-50"
-										>
-											<td className="border p-3">
-												{category.id}
-											</td>
-											<td className="border p-3">
-												{category.name}
-											</td>
-											<td className="border p-3">
-												<div className="space-x-2">
-													<button
-														className="text-blue-500 hover:underline"
-														onClick={() =>
-															setCategoryToUpdate(
-																category
-															)
-														}
-													>
-														Cập nhật
-													</button>
-													<span>|</span>
-													<button
-														className="text-red-500 hover:underline"
-														onClick={() =>
-															handleDeleteClick(
-																category
-															)
-														}
-													>
-														Xóa
-													</button>
-												</div>
-											</td>
-										</tr>
-									))}
+									{displayedCategories.map(
+										(category, index) => (
+											<tr
+												key={category.id}
+												className="hover:bg-gray-50"
+											>
+												<td className="border p-3">
+													{startIndex + index + 1}
+												</td>
+												<td className="border p-3">
+													{category.name}
+												</td>
+												<td className="border p-3">
+													<div className="space-x-2">
+														<button
+															className="text-blue-500 hover:underline"
+															onClick={() =>
+																setCategoryToUpdate(
+																	category
+																)
+															}
+														>
+															Cập nhật
+														</button>
+														<span>|</span>
+														<button
+															className="text-red-500 hover:underline"
+															onClick={() =>
+																handleDeleteClick(
+																	category
+																)
+															}
+														>
+															Xóa
+														</button>
+													</div>
+												</td>
+											</tr>
+										)
+									)}
 								</tbody>
 							</table>
 						</div>
 
 						{/* Pagination */}
 						<div className="flex items-center justify-center space-x-2 mt-4">
-							<button className="p-2 border rounded hover:bg-gray-100">
+							<button
+								className="p-2 border rounded hover:bg-gray-100"
+								onClick={() =>
+									handlePageChange(currentPage - 1)
+								}
+								disabled={currentPage === 1}
+							>
 								<ChevronLeft className="w-4 h-4" />
 							</button>
-							<button className="p-2 border rounded bg-blue-500 text-white">
-								1
-							</button>
-							<button className="p-2 border rounded hover:bg-gray-100">
-								2
-							</button>
-							<button className="p-2 border rounded hover:bg-gray-100">
-								3
-							</button>
-							<button className="p-2 border rounded hover:bg-gray-100">
+							{[...Array(totalPages)].map((_, index) => (
+								<button
+									key={index}
+									className={`p-2 border rounded ${
+										currentPage === index + 1
+											? "bg-blue-500 text-white"
+											: "hover:bg-gray-100"
+									}`}
+									onClick={() => handlePageChange(index + 1)}
+								>
+									{index + 1}
+								</button>
+							))}
+							<button
+								className="p-2 border rounded hover:bg-gray-100"
+								onClick={() =>
+									handlePageChange(currentPage + 1)
+								}
+								disabled={currentPage === totalPages}
+							>
 								<ChevronRight className="w-4 h-4" />
 							</button>
 						</div>

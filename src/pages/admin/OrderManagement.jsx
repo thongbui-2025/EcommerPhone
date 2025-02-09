@@ -1,8 +1,16 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Search, ChevronLeft, ChevronRight, Eye } from "lucide-react";
 import OrderDetails from "../../admin_components/OrderManagement/OrderDetails";
+import axios from "axios";
 
 const OrderManagement = () => {
+	useEffect(() => {
+		axios
+			.get("/Orders")
+			.then((response) => console.log(response.data))
+			.catch((error) => console.error("Lỗi khi lấy dữ liệu:", error));
+	}, []);
+
 	const [searchQuery, setSearchQuery] = useState("");
 	const [selectedStatus, setSelectedStatus] = useState("all");
 	const [customers, setCustomers] = useState([
