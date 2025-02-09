@@ -5,9 +5,18 @@ const UpdateCategory = ({ category, onBack, onUpdate }) => {
 	const [categoryData, setCategoryData] = useState({
 		id: category.id,
 		name: category.name,
+		description: category.description,
 	});
 
 	const handleInputChange = (e) => {
+		const { name, value } = e.target;
+		setCategoryData((prev) => ({
+			...prev,
+			[name]: value,
+		}));
+	};
+
+	const handleTextareaChange = (e) => {
 		const { name, value } = e.target;
 		setCategoryData((prev) => ({
 			...prev,
@@ -49,6 +58,17 @@ const UpdateCategory = ({ category, onBack, onUpdate }) => {
 							className="w-full p-2 border rounded"
 							placeholder="Nhập tên danh mục"
 						/>
+					</div>
+					<div>
+						<label className="block mb-1">Mô tả</label>
+						<textarea
+							name="description"
+							value={categoryData.description}
+							className="w-full p-2 border rounded"
+							onChange={handleTextareaChange}
+							rows="4"
+							placeholder="Mô tả ngắn gọn về danh mục sản phẩm"
+						></textarea>
 					</div>
 
 					{/* Submit Button */}

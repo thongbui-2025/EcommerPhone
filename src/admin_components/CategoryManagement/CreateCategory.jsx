@@ -1,23 +1,14 @@
 import { useState } from "react";
 import { ArrowLeft } from "lucide-react";
 
-const CreateCategory = ({ onBack }) => {
-	const [categoryData, setCategoryData] = useState({
-		name: "",
-	});
-
-	const handleInputChange = (e) => {
-		const { name, value } = e.target;
-		setCategoryData((prev) => ({
-			...prev,
-			[name]: value,
-		}));
-	};
+const CreateCategory = ({ onBack, onCreate }) => {
+	const [name, setName] = useState("");
+	const [description, setDescription] = useState("");
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
 		// Handle form submission here
-		console.log("Category Data:", categoryData);
+		onCreate({ name, description });
 		onBack();
 	};
 
@@ -38,18 +29,33 @@ const CreateCategory = ({ onBack }) => {
 					Quay lại
 				</button>
 
-				<form onSubmit={handleSubmit} className="space-y-6 max-w-md">
+				<form
+					onSubmit={handleSubmit}
+					className="grid grid-cols-2 space-y-6 space-x-15 max-w-md"
+				>
 					{/* Category Name */}
 					<div>
 						<label className="block mb-1">Tên danh mục</label>
 						<input
 							type="text"
 							name="name"
-							value={categoryData.name}
-							onChange={handleInputChange}
+							value={name}
+							onChange={(e) => setName(e.target.value)}
 							className="w-full p-2 border rounded"
 							placeholder="Nhập tên danh mục"
+							required
 						/>
+					</div>
+					<div>
+						<label className="block mb-1">Mô tả</label>
+						<textarea
+							name="shortDescription"
+							value={description}
+							className="w-full p-2 border rounded"
+							onChange={(e) => setDescription(e.target.value)}
+							rows="4"
+							placeholder="Mô tả ngắn gọn về danh mục sản phẩm"
+						></textarea>
 					</div>
 
 					{/* Submit Button */}

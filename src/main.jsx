@@ -16,6 +16,9 @@ import AdminLayout from "./layout/AdminLayout.jsx";
 import Payment from "./components/Payment/index.jsx";
 import AdminPage from "./pages/admin/AdminPage.jsx";
 import LoginPage from "./pages/admin/LoginPage.jsx";
+import axios from "axios";
+
+axios.defaults.baseURL = "https://localhost:7011/api/";
 
 const router = createBrowserRouter([
 	{

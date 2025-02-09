@@ -1,29 +1,34 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import CreateCategory from "../../admin_components/CategoryManagement/CreateCategory";
 import UpdateCategory from "../../admin_components/CategoryManagement/UpdateCategory";
+import axios from "axios";
 
 const CategoryManagement = () => {
 	const [showCreateForm, setShowCreateForm] = useState(false);
 	const [categoryToUpdate, setCategoryToUpdate] = useState(null);
 	const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
 	const [categoryToDelete, setCategoryToDelete] = useState(null);
-	const [categories, setCategories] = useState([
-		{ id: 1, name: "Iphone" },
-		{ id: 2, name: "Samsung" },
-		{ id: 3, name: "Xiaomi" },
-		{ id: 4, name: "Oppo" },
-	]);
+	const [categories, setCategories] = useState([]);
+
+	useEffect(() => {
+		axios
+			.get("/Brands")
+			.then((response) => setCategories(response.data))
+			.catch((error) => console.error("Lỗi khi lấy dữ liệu:", error));
+	}, []);
 
 	const handleCategoryUpdate = (updatedCategory) => {
-		setCategories((prevCategories) =>
-			prevCategories.map((category) =>
-				category.id === updatedCategory.id
-					? { ...category, ...updatedCategory }
-					: category
-			)
-		);
-		setCategoryToUpdate(null);
+		axios.put(`/Brands/${updatedCategory.id}`, updatedCategory).then(() => {
+			setCategories((prevCategories) =>
+				prevCategories.map((category) =>
+					category.id === updatedCategory.id
+						? { ...category, ...updatedCategory }
+						: category
+				)
+			);
+			setCategoryToUpdate(null);
+		});
 	};
 
 	const handleDeleteClick = (category) => {
@@ -32,11 +37,18 @@ const CategoryManagement = () => {
 	};
 
 	const handleConfirmDelete = () => {
-		setCategories((prevCategories) =>
-			prevCategories.filter((c) => c.id !== categoryToDelete.id)
-		);
-		setShowDeleteConfirmation(false);
-		setCategoryToDelete(null);
+		axios
+			.delete(`/Brands/${categoryToDelete.id}`)
+			.then(() => {
+				setCategories((prevCategories) =>
+					prevCategories.filter((c) => c.id !== categoryToDelete.id)
+				);
+				setShowDeleteConfirmation(false);
+				setCategoryToDelete(null);
+			})
+			.catch((error) => {
+				console.error("Lỗi khi xóa danh mục:", error);
+			});
 	};
 
 	const handleCancelDelete = () => {
@@ -44,8 +56,27 @@ const CategoryManagement = () => {
 		setCategoryToDelete(null);
 	};
 
+	const handleCreateCategory = (newCategory) => {
+		console.log(newCategory);
+
+		axios
+			.post("/Brands", newCategory)
+			.then((response) => {
+				setCategories([...categories, response.data]);
+				setShowCreateForm(false);
+			})
+			.catch((error) =>
+				console.error("Lỗi khi tạo danh mục mới:", error)
+			);
+	};
+
 	if (showCreateForm) {
-		return <CreateCategory onBack={() => setShowCreateForm(false)} />;
+		return (
+			<CreateCategory
+				onBack={() => setShowCreateForm(false)}
+				onCreate={handleCreateCategory}
+			/>
+		);
 	}
 
 	if (categoryToUpdate) {
@@ -168,7 +199,7 @@ const CategoryManagement = () => {
 							Xác nhận xóa danh mục
 						</h2>
 						<p className="mb-4">
-							Bạn có chắc chắn muốn xóa danh mục
+							Bạn có chắc chắn muốn xóa danh mục{" "}
 							{categoryToDelete?.name}?
 						</p>
 						<div className="flex justify-end space-x-2">

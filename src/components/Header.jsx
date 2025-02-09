@@ -1,8 +1,17 @@
+import axios from "axios";
 import { ShoppingBag, Search, User, Clock, LogOut } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router";
 
 const Header = () => {
+	// const [brands, setBrands] = useState([]);
+
+	useEffect(() => {
+		axios.get("Brands").then((response) => console.log(response.data));
+	}, []);
+
+	// console.log();
+
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
 	const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
