@@ -31,7 +31,7 @@ const CreateCategory = ({ onBack, onCreate }) => {
 
 				<form
 					onSubmit={handleSubmit}
-					className="grid grid-cols-2 space-y-6 space-x-15 max-w-md"
+					className="grid grid-cols-2 space-y-6 space-x-15 max-w"
 				>
 					{/* Category Name */}
 					<div>
@@ -53,7 +53,7 @@ const CreateCategory = ({ onBack, onCreate }) => {
 							value={description}
 							className="w-full p-2 border rounded"
 							onChange={(e) => setDescription(e.target.value)}
-							rows="4"
+							rows="6"
 							placeholder="Mô tả ngắn gọn về danh mục sản phẩm"
 						></textarea>
 					</div>

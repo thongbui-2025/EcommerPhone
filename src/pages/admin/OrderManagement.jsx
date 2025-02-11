@@ -3,93 +3,106 @@ import { Search, ChevronLeft, ChevronRight, Eye } from "lucide-react";
 import OrderDetails from "../../admin_components/OrderManagement/OrderDetails";
 import axios from "axios";
 
-const OrderManagement = () => {
-	useEffect(() => {
-		axios
-			.get("/Orders")
-			.then((response) => console.log(response.data))
-			.catch((error) => console.error("Lỗi khi lấy dữ liệu:", error));
-	}, []);
+const ITEMS_PER_PAGE = 10;
 
+const OrderManagement = () => {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [selectedStatus, setSelectedStatus] = useState("all");
-	const [customers, setCustomers] = useState([
-		{
-			id: 1,
-			name: "Tuong123",
-			phone: "0903601020",
-			orderDate: "31/12/2020",
-			status: "pending",
-			orderValue: 45000000,
-		},
-		{
-			id: 2,
-			name: "Huychuahe69",
-			phone: "0903601020",
-			orderDate: "31/12/2020",
-			status: "delivering",
-			orderValue: 30000000,
-		},
-		{
-			id: 3,
-			name: "Huychuahe69",
-			phone: "0903601020",
-			orderDate: "31/12/2020",
-			status: "delivered",
-			orderValue: 30000000,
-		},
-		{
-			id: 4,
-			name: "Huychuahe69",
-			phone: "0903601020",
-			orderDate: "31/12/2020",
-			status: "cancelled",
-			orderValue: 30000000,
-		},
-		{
-			id: 5,
-			name: "NguyenVanA",
-			phone: "0901234567",
-			orderDate: "01/01/2021",
-			status: "delivered",
-			orderValue: 25000000,
-		},
-	]);
+	const [customers, setCustomers] = useState([]);
+
+	useEffect(() => {
+		Promise.all([
+			axios.get("/Orders"),
+			axios.get("/Order_Item"),
+			axios.get("/Product_SKU"),
+			axios.get("/Products"),
+			axios.get("/Product_Image"),
+		]).then(([orderRes, orderItemRes, skusRes, productsRes, imagesRes]) => {
+			const orders = orderRes.data;
+			// console.log("orders", orders);
+			const orderItems = orderItemRes.data;
+			// console.log("orderItems", orderItems);
+			const skus = skusRes.data;
+			// console.log("skus", skus);
+			const products = productsRes.data;
+			// console.log("products", products);
+			const images = imagesRes.data;
+			// console.log("images", images);
+
+			// Chuyển đổi dữ liệu thành object map để tra cứu nhanh
+			const skuMap = skus.reduce((acc, sku) => {
+				acc[sku.id] = sku;
+				return acc;
+			}, {});
+			// console.log("skuMap", skuMap);
+
+			const productMap = products.reduce((acc, product) => {
+				acc[product.id] = product;
+				return acc;
+			}, {});
+			// console.log("productMap", productMap);
+
+			const imageMap = images.reduce((acc, image) => {
+				acc[image.productId] = image;
+				return acc;
+			}, {});
+			// console.log("imageMap", imageMap);
+
+			// Nhóm các orderItems theo orderId
+			const ordersWithDetails = orders.map((order) => {
+				const items = orderItems
+					.filter((item) => item.orderId === order.id)
+					.map((item) => {
+						const sku = skuMap[item.product_SKUId] || {};
+						// console.log(sku);
+						const product =
+							productMap[sku.productId || sku.id] || {};
+						// console.log(product);
+						const image = imageMap[product.id] || {};
+						// console.log(image);
+
+						return {
+							...item,
+							sku,
+							product,
+							image,
+						};
+					});
+
+				return {
+					...order,
+					orderItems: items,
+				};
+			});
+			setCustomers(ordersWithDetails);
+		});
+	}, []);
+
+	console.log("customers", customers);
+
+	// Logic pagination
+	const [currentPage, setCurrentPage] = useState(1);
+	const totalPages = Math.ceil(customers.length / ITEMS_PER_PAGE);
+
+	const handlePageChange = (newPage) => {
+		if (newPage >= 1 && newPage <= totalPages) {
+			setCurrentPage(newPage);
+		}
+	};
+
+	const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+	const displayedCustomers = customers.slice(
+		startIndex,
+		startIndex + ITEMS_PER_PAGE
+	);
+
+	// formatDate
+	const formatDate = (dateString) => {
+		const options = { year: "numeric", month: "2-digit", day: "2-digit" };
+		return new Date(dateString).toLocaleDateString("vi-VN", options);
+	};
 
 	const [selectedOrder, setSelectedOrder] = useState(null);
-
-	const mockOrderDetails = {
-		id: 1,
-		customerName: "Tuong123",
-		customerPhone: "0903601020",
-		customerAddress: "123 Đường ABC, Quận 1, TP.HCM",
-		orderDate: "31/12/2020",
-		status: "pending",
-		totalValue: 45000000,
-		products: [
-			{
-				id: 1,
-				name: "iPhone 12",
-				price: 30000000,
-				quantity: 1,
-				image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-XZb0EdamED0thuP9ud1iYqkYJsG0k4.png",
-			},
-			{
-				id: 2,
-				name: "AirPods Pro",
-				price: 15000000,
-				quantity: 1,
-				image: "/placeholder.svg",
-			},
-		],
-		history: [
-			{
-				status: "pending",
-				date: "31/12/2020 10:00",
-				note: "Đơn hàng được tạo",
-			},
-		],
-	};
 
 	const formatPrice = (price) => {
 		return new Intl.NumberFormat("vi-VN").format(price);
@@ -125,37 +138,37 @@ const OrderManagement = () => {
 		}
 	};
 
-	const handleApproveOrder = (id) => {
-		setCustomers((prevCustomers) =>
-			prevCustomers.map((customer) =>
-				customer.id === id
-					? { ...customer, status: "delivering" }
-					: customer
-			)
-		);
-	};
+	// const handleApproveOrder = (id) => {
+	// 	setCustomers((prevCustomers) =>
+	// 		prevCustomers.map((customer) =>
+	// 			customer.id === id
+	// 				? { ...customer, status: "delivering" }
+	// 				: customer
+	// 		)
+	// 	);
+	// };
 
-	const handleCancelOrder = (id) => {
-		setCustomers((prevCustomers) =>
-			prevCustomers.map((customer) =>
-				customer.id === id
-					? { ...customer, status: "cancelled" }
-					: customer
-			)
-		);
-	};
+	// const handleCancelOrder = (id) => {
+	// 	setCustomers((prevCustomers) =>
+	// 		prevCustomers.map((customer) =>
+	// 			customer.id === id
+	// 				? { ...customer, status: "cancelled" }
+	// 				: customer
+	// 		)
+	// 	);
+	// };
 
 	const handleViewOrder = (orderId) => {
 		const selectedCustomer = customers.find((c) => c.id === orderId);
+		console.log("selectedCustomer", selectedCustomer);
 		if (selectedCustomer) {
 			setSelectedOrder({
-				...mockOrderDetails,
 				id: selectedCustomer.id,
-				customerName: selectedCustomer.name,
-				customerPhone: selectedCustomer.phone,
-				orderDate: selectedCustomer.orderDate,
-				status: selectedCustomer.status,
-				totalValue: selectedCustomer.orderValue,
+				customerName: selectedCustomer.receiverName,
+				customerPhone: selectedCustomer.receiverNumber,
+				customerAddress: selectedCustomer.shippingAddress,
+				orderDate: formatDate(selectedCustomer.orderDate),
+				orderItems: selectedCustomer.orderItems || [],
 			});
 		}
 	};
@@ -230,10 +243,10 @@ const OrderManagement = () => {
 							className="p-2 border rounded"
 						>
 							<option value="all">Tất cả trạng thái</option>
-							<option value="pending">Đang chờ duyệt</option>
+							{/* <option value="pending">Đang chờ duyệt</option>
 							<option value="delivering">Đang giao hàng</option>
 							<option value="delivered">Đã giao</option>
-							<option value="cancelled">Đã hủy</option>
+							<option value="cancelled">Đã hủy</option> */}
 						</select>
 					</div>
 
@@ -242,7 +255,9 @@ const OrderManagement = () => {
 						<table className="w-full border-collapse">
 							<thead>
 								<tr className="bg-gray-50">
-									<th className="border p-3 text-left">ID</th>
+									<th className="border p-3 text-left">
+										STT
+									</th>
 									<th className="border p-3 text-left">
 										Khách hàng
 									</th>
@@ -258,51 +273,49 @@ const OrderManagement = () => {
 									<th className="border p-3 text-left">
 										Giá trị đơn hàng
 									</th>
-									<th className="border p-3 text-left">
+									{/* <th className="border p-3 text-left">
 										Xử lý đơn
-									</th>
+									</th> */}
 									<th className="border p-3 text-left">
 										Thao tác
 									</th>
 								</tr>
 							</thead>
 							<tbody>
-								{customers
+								{displayedCustomers
 									.filter(
 										(customer) =>
 											selectedStatus === "all" ||
 											customer.status === selectedStatus
 									)
-									.map((customer) => (
+									.map((customer, index) => (
 										<tr
 											key={customer.id}
 											className="hover:bg-gray-50"
 										>
 											<td className="border p-3">
-												{customer.id}
+												{startIndex + index + 1}
 											</td>
 											<td className="border p-3">
-												{customer.name}
+												{customer.receiverName}
 											</td>
 											<td className="border p-3">
-												{customer.phone}
+												{customer.receiverNumber}
 											</td>
 											<td className="border p-3">
-												{customer.orderDate}
+												{formatDate(customer.orderDate)}
 											</td>
 											<td
 												className={`border p-3 ${getStatusColor(
 													customer.status
 												)}`}
 											>
-												{getStatusText(customer.status)}
+												Thành công
 											</td>
 											<td className="border p-3">
-												{formatPrice(
-													customer.orderValue
-												)}
+												{formatPrice(customer.payment)}
 											</td>
-											<td className="border p-3">
+											{/* <td className="border p-3">
 												{customer.status ===
 													"pending" && (
 													<div className="flex space-x-2">
@@ -344,7 +357,7 @@ const OrderManagement = () => {
 														</button>
 													</div>
 												)}
-											</td>
+											</td> */}
 											<td className="border p-3">
 												<button
 													onClick={() =>
@@ -366,19 +379,31 @@ const OrderManagement = () => {
 
 					{/* Pagination */}
 					<div className="flex items-center justify-center space-x-2 mt-4">
-						<button className="p-2 border rounded hover:bg-gray-100">
+						<button
+							className="p-2 border rounded hover:bg-gray-100"
+							onClick={() => handlePageChange(currentPage - 1)}
+							disabled={currentPage === 1}
+						>
 							<ChevronLeft className="w-4 h-4" />
 						</button>
-						<button className="p-2 border rounded bg-blue-500 text-white">
-							1
-						</button>
-						<button className="p-2 border rounded hover:bg-gray-100">
-							2
-						</button>
-						<button className="p-2 border rounded hover:bg-gray-100">
-							3
-						</button>
-						<button className="p-2 border rounded hover:bg-gray-100">
+						{[...Array(totalPages)].map((_, index) => (
+							<button
+								key={index}
+								className={`p-2 border rounded ${
+									currentPage === index + 1
+										? "bg-blue-500 text-white"
+										: "hover:bg-gray-100"
+								}`}
+								onClick={() => handlePageChange(index + 1)}
+							>
+								{index + 1}
+							</button>
+						))}
+						<button
+							className="p-2 border rounded hover:bg-gray-100"
+							onClick={() => handlePageChange(currentPage + 1)}
+							disabled={currentPage === totalPages}
+						>
 							<ChevronRight className="w-4 h-4" />
 						</button>
 					</div>

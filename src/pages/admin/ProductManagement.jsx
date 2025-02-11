@@ -40,28 +40,7 @@ const ProductManagement = () => {
 			.catch((error) => console.error("Lỗi khi lấy dữ liệu:", error));
 	}, []);
 
-	// console.log(products);
-
-	// const [products, setProducts] = useState([
-	// 	{
-	// 		id: 1,
-	// 		image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-XZb0EdamED0thuP9ud1iYqkYJsG0k4.png",
-	// 		name: "IPhone 12",
-	// 		price: 30000000,
-	// 		quantity: 10,
-	// 		description:
-	// 			"iPhone 12 với màn hình Super Retina XDR 6.1 inch, chip A14 Bionic mạnh mẽ, và hệ thống camera kép 12MP. Thiết kế vuông vắn với khung nhôm và mặt lưng kính, hỗ trợ sạc không dây MagSafe.",
-	// 	},
-	// 	{
-	// 		id: 2,
-	// 		image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-XZb0EdamED0thuP9ud1iYqkYJsG0k4.png",
-	// 		name: "Iphone X",
-	// 		price: 12000000,
-	// 		quantity: 10,
-	// 		description:
-	// 			"iPhone X với màn hình Super Retina 5.8 inch, chip A11 Bionic, camera kép 12MP với khả năng chụp ảnh xóa phông. Thiết kế đột phá với màn hình tràn viền và Face ID.",
-	// 	},
-	// ]);
+	console.log(products);
 
 	const formatPrice = (price) => {
 		return new Intl.NumberFormat("vi-VN").format(price);
@@ -241,7 +220,8 @@ const ProductManagement = () => {
 											</td>
 											<td className="border p-3">
 												{formatPrice(
-													product.skus[0].defaultPrice
+													product.skus[0]
+														?.defaultPrice
 												)}
 											</td>
 											<td className="border p-3">

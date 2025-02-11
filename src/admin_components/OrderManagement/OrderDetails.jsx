@@ -12,6 +12,8 @@ const OrderDetails = ({ order, onBack, onUpdateStatus }) => {
 		return new Intl.NumberFormat("vi-VN").format(price) + " đ";
 	};
 
+	console.log("Order", order);
+
 	const getStatusText = (status) => {
 		switch (status) {
 			case "pending":
@@ -55,6 +57,12 @@ const OrderDetails = ({ order, onBack, onUpdateStatus }) => {
 			default:
 				return <Package className="w-5 h-5" />;
 		}
+	};
+
+	const calculateTotalPrice = (orderItems) => {
+		return orderItems.reduce((total, item) => {
+			return total + item.price * item.quantity;
+		}, 0);
 	};
 
 	return (
@@ -182,13 +190,15 @@ const OrderDetails = ({ order, onBack, onUpdateStatus }) => {
 											</tr>
 										</thead>
 										<tbody className="divide-y">
-											{order.products.map((product) => (
+											{order.orderItems.map((product) => (
 												<tr key={product.id}>
 													<td className="py-4">
 														<div className="flex items-center gap-4">
 															<img
 																src={
-																	product.image ||
+																	product
+																		.image
+																		.imageName ||
 																	"/placeholder.svg"
 																}
 																alt={
@@ -197,7 +207,11 @@ const OrderDetails = ({ order, onBack, onUpdateStatus }) => {
 																className="w-16 h-16 object-cover rounded"
 															/>
 															<span>
-																{product.name}
+																{
+																	product
+																		.product
+																		.name
+																}
 															</span>
 														</div>
 													</td>
@@ -228,7 +242,9 @@ const OrderDetails = ({ order, onBack, onUpdateStatus }) => {
 												</td>
 												<td className="py-4 text-right font-semibold text-lg text-red-600">
 													{formatPrice(
-														order.totalValue
+														calculateTotalPrice(
+															order.orderItems
+														)
 													)}
 												</td>
 											</tr>
@@ -274,7 +290,7 @@ const OrderDetails = ({ order, onBack, onUpdateStatus }) => {
 							</div>
 
 							{/* Order History */}
-							<div className="border rounded-lg">
+							{/* <div className="border rounded-lg">
 								<h3 className="font-semibold p-4 border-b">
 									Lịch sử đơn hàng
 								</h3>
@@ -311,7 +327,7 @@ const OrderDetails = ({ order, onBack, onUpdateStatus }) => {
 										))}
 									</div>
 								</div>
-							</div>
+							</div> */}
 						</div>
 					</div>
 				</div>
