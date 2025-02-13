@@ -76,13 +76,13 @@ const LoginForm = () => {
 						/>
 						<button
 							type="submit"
-							className="p-3 bg-white text-black rounded-md font-medium hover:bg-gray-50 transition-colors"
+							className="p-3 bg-white text-black rounded-md font-medium hover:opacity-80 cursor-pointer transition-colors"
 						>
 							Đăng nhập
 						</button>
 					</form>
 					<p className="text-center mt-20 text-black">
-						Chưa có mật khẩu?{" "}
+						Chưa có tài khoản?{" "}
 						<a
 							href="/registration"
 							className="underline hover:opacity-80 transition-opacity"

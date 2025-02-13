@@ -1,11 +1,22 @@
 import { LogOut, User } from "lucide-react";
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
+import { logout } from "../utils/auth";
 
 const Header = () => {
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+	const navigate = useNavigate();
 
-	const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
+	const toggleDropdown = () => {
+		setIsDropdownOpen(!isDropdownOpen);
+	};
+
+	const handleLogout = () => {
+		logout();
+		navigate("/login/admin"); // Điều hướng về trang đăng nhập
+	};
+	// Lấy role từ localStorage khi component render
+
 	return (
 		<header className="w-full">
 			<div className="container mx-auto ">
@@ -47,7 +58,7 @@ const Header = () => {
 									</Link> */}
 									<Link to="/login/admin">
 										<button
-											onClick={toggleDropdown}
+											onClick={handleLogout}
 											className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
 										>
 											<LogOut className="inline-block mr-2 h-4 w-4" />

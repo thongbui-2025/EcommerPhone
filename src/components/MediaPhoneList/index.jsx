@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Search, ShoppingCart, ChevronDown } from "lucide-react";
-import { Link } from "react-router";
+import { Link, useParams } from "react-router";
+import axios from "axios";
 
 const priceRanges = [
 	{ id: "all", label: "Tất cả" },
@@ -11,49 +12,77 @@ const priceRanges = [
 	{ id: "above20m", label: "Trên 20 triệu" },
 ];
 
-const allProducts = [
-	{
-		id: 1,
-		name: "iPhone X series",
-		price: 20000000,
-		image: "https://cdn.tgdd.vn/Products/Images/42/213031/TimerThumb/iphone-12-(76).jpg",
-	},
-	{
-		id: 2,
-		name: "iPhone 11 Pro Max",
-		price: 18000000,
-		image: "https://cdn.tgdd.vn/Products/Images/42/311354/TimerThumb/oppo-a58-4g-(24).jpg",
-	},
-	{
-		id: 3,
-		name: "iPhone 12",
-		price: 35000000,
-		image: "https://cdn.tgdd.vn/Products/Images/42/329007/xiaomi-redmi-14c-black-1-600x600.jpg",
-	},
-	{
-		id: 4,
-		name: "iPhone 13",
-		price: 25000000,
-		image: "/placeholder.svg?height=200&width=200",
-	},
-	{
-		id: 5,
-		name: "iPhone 14",
-		price: 30000000,
-		image: "/placeholder.svg?height=200&width=200",
-	},
-	{
-		id: 6,
-		name: "iPhone 14 Pro",
-		price: 40000000,
-		image: "/placeholder.svg?height=200&width=200",
-	},
-];
-
 export default function MediaPhoneList() {
 	const [selectedPriceRange, setSelectedPriceRange] = useState("all");
 	const [showAll, setShowAll] = useState(false);
 	const [sortOrder, setSortOrder] = useState("default");
+
+	const { brand } = useParams(); // Lấy branch từ URL params
+	const [allProducts, setAllProducts] = useState([]);
+
+	useEffect(() => {
+		if (!brand) return;
+
+		// Bước 1: Lấy branchID từ tên branch
+		axios
+			.get("/Brands")
+			.then((brandRes) => {
+				const brandData = brandRes.data;
+				const foundBrand = brandData.find(
+					(b) => b.name.toLowerCase() === brand.toLowerCase()
+				);
+
+				if (!foundBrand) {
+					console.log("Không tìm thấy thương hiệu");
+					return;
+				}
+
+				const brandID = foundBrand.id;
+
+				// Bước 2: Gọi API lấy danh sách sản phẩm theo brandID
+				return Promise.all([
+					axios.get("/Products"),
+					axios.get("/Product_SKU"),
+					axios.get("/Product_Image"),
+				]).then(([productsRes, skusRes, imagesRes]) => {
+					const allProducts = productsRes.data;
+					const allSkus = skusRes.data;
+					const allImages = imagesRes.data;
+
+					// Bước 3: Lọc sản phẩm theo brandID
+					const filteredProducts = allProducts.filter(
+						(product) => product.brandId === brandID
+					);
+
+					console.log(filteredProducts);
+
+					// Bước 4: Chuyển SKU & Images thành Map để tìm kiếm nhanh
+					const skuMap = allSkus.reduce((acc, sku) => {
+						acc[sku.productId] = sku;
+						return acc;
+					}, {});
+
+					const imageMap = allImages.reduce((acc, image) => {
+						acc[image.productId] = image;
+						return acc;
+					}, {});
+
+					// Bước 5: Merge dữ liệu sản phẩm
+					const mergedProducts = filteredProducts.map((product) => ({
+						...product,
+						sku: skuMap[product.id] || null,
+						image: imageMap[product.id] || null,
+					}));
+
+					setAllProducts(mergedProducts);
+				});
+			})
+			.catch((err) => {
+				console.error("Lỗi tải dữ liệu:", err);
+			});
+	}, [brand]);
+
+	console.log(allProducts);
 
 	const formatPrice = (price) => {
 		return new Intl.NumberFormat("vi-VN").format(price) + " đ";
@@ -67,7 +96,7 @@ export default function MediaPhoneList() {
 			"5mto9m": [5000000, 9000000],
 			"9mto15m": [9000000, 15000000],
 			"15mto20m": [15000000, 20000000],
-			above13m: [20000000, Number.POSITIVE_INFINITY],
+			above20m: [20000000, Number.POSITIVE_INFINITY],
 		};
 
 		const [min, max] = ranges[selectedPriceRange] || [
@@ -75,7 +104,9 @@ export default function MediaPhoneList() {
 			Number.POSITIVE_INFINITY,
 		];
 		return products.filter(
-			(product) => product.price >= min && product.price < max
+			(product) =>
+				product.sku.defaultPrice > min &&
+				product.sku.defaultPrice <= max
 		);
 	};
 
@@ -83,9 +114,13 @@ export default function MediaPhoneList() {
 		const sorted = [...products];
 		switch (sortOrder) {
 			case "price-asc":
-				return sorted.sort((a, b) => a.price - b.price);
+				return sorted.sort(
+					(a, b) => a.sku.defaultPrice - b.sku.defaultPrice
+				);
 			case "price-desc":
-				return sorted.sort((a, b) => b.price - a.price);
+				return sorted.sort(
+					(a, b) => b.sku.defaultPrice - a.sku.defaultPrice
+				);
 			default:
 				return sorted;
 		}
@@ -123,7 +158,7 @@ export default function MediaPhoneList() {
 				<div className="md:col-span-3">
 					<div className="flex justify-between items-center mb-6">
 						<h1 className="text-xl font-bold">
-							iPhone ({filteredProducts.length} sản phẩm)
+							{brand} ({filteredProducts.length} sản phẩm)
 						</h1>
 						<select
 							className="border rounded-md px-3 py-1"
@@ -143,7 +178,10 @@ export default function MediaPhoneList() {
 								className="border rounded-lg p-4 bg-white"
 							>
 								<img
-									src={product.image || "/placeholder.svg"}
+									src={
+										product.image.imageName ||
+										"/placeholder.svg"
+									}
 									alt={product.name}
 									className="w-full h-48 object-contain mb-4"
 								/>
@@ -151,7 +189,7 @@ export default function MediaPhoneList() {
 									{product.name}
 								</h3>
 								<p className="text-red-600 font-bold text-center mb-4">
-									{formatPrice(product.price)}
+									{formatPrice(product.sku?.defaultPrice)}
 								</p>
 								<div className="grid grid-cols-2 gap-2">
 									<Link to={`/product/${product.id}`}>

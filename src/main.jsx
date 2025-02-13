@@ -33,7 +33,7 @@ const router = createBrowserRouter([
 				element: <ProductDetails />,
 			},
 			{
-				path: "/iphone",
+				path: "/:brand",
 				element: <MediaPhoneList />,
 			},
 			{

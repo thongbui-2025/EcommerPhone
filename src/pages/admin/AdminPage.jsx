@@ -1,11 +1,29 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ProductManagement from "./ProductManagement";
 import CategoryManagement from "./CategoryManagement";
 import OrderManagement from "./OrderManagement";
 import CustomerManagement from "./CustomerManagement";
+import { isAdmin } from "../../utils/auth";
+import { useNavigate } from "react-router";
 
 export default function AdminPage() {
+	const navigate = useNavigate();
+	const [authorized, setAuthorized] = useState(null); // Kiểm tra trạng thái quyền
 	const [activeTab, setActiveTab] = useState("products");
+
+	useEffect(() => {
+		if (!isAdmin()) {
+			alert("Bạn không có quyền truy cập!");
+			navigate("/login/admin");
+		} else {
+			setAuthorized(true); // Nếu là admin thì cho phép hiển thị trang
+		}
+	}, [navigate]);
+
+	// Khi trạng thái chưa xác định (đang kiểm tra quyền), không hiển thị giao diện
+	if (authorized === null) {
+		return null; // Hoặc có thể hiển thị màn hình loading
+	}
 
 	return (
 		<div className="min-h-screen bg-gray-100">

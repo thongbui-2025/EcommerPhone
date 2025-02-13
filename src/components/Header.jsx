@@ -4,13 +4,13 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router";
 
 const Header = () => {
-	// const [brands, setBrands] = useState([]);
+	const [brands, setBrands] = useState([]);
 
 	useEffect(() => {
-		axios.get("Brands").then((response) => console.log(response.data));
+		axios.get("Brands").then((response) => setBrands(response.data));
 	}, []);
 
-	// console.log();
+	console.log(brands);
 
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -104,46 +104,16 @@ const Header = () => {
 				{/* Navigation */}
 				<nav className="bg-gradient-to-r from-[#2193B0] to-[#6DD5ED] pl-15">
 					<ul className="flex items-center justify-start space-x-8 px-4 py-3 text-[#333333] font-semibold">
-						<li>
-							<Link to="/iphone" className="hover:opacity-80">
-								IPHONE
-							</Link>
-						</li>
-						<li>
-							<Link to="/samsung" className="hover:opacity-80">
-								SAMSUNG
-							</Link>
-						</li>
-						<li>
-							<Link to="/oppo" className="hover:opacity-80">
-								OPPO
-							</Link>
-						</li>
-						<li>
-							<Link to="/huawei" className="hover:opacity-80">
-								HUAWEI
-							</Link>
-						</li>
-						<li>
-							<Link to="/realme" className="hover:opacity-80">
-								REALME
-							</Link>
-						</li>
-						<li>
-							<Link to="/vivo" className="hover:opacity-80">
-								VIVO
-							</Link>
-						</li>
-						<li>
-							<Link to="/xiaomi" className="hover:opacity-80">
-								XIAOMI
-							</Link>
-						</li>
-						<li>
-							<Link to="/nokia" className="hover:opacity-80">
-								NOKIA
-							</Link>
-						</li>
+						{brands.map((brand) => (
+							<li key={brand.id}>
+								<Link
+									to={`/${brand.name}`}
+									className="hover:opacity-80"
+								>
+									{brand.name}
+								</Link>
+							</li>
+						))}
 					</ul>
 				</nav>
 			</div>

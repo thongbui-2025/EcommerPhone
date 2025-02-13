@@ -5,6 +5,8 @@ import ProductDetails from "../../admin_components/ProductManagement/ProductDeta
 import CreateProduct from "../../admin_components/ProductManagement/CreateProduct";
 import axios from "axios";
 
+const ITEMS_PER_PAGE = 10;
+
 const ProductManagement = () => {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [selectedCategory, setSelectedCategory] = useState("all");
@@ -40,7 +42,23 @@ const ProductManagement = () => {
 			.catch((error) => console.error("Lỗi khi lấy dữ liệu:", error));
 	}, []);
 
-	console.log(products);
+	// console.log(products);
+
+	// Logic pagination
+	const [currentPage, setCurrentPage] = useState(1);
+	const totalPages = Math.ceil(products.length / ITEMS_PER_PAGE);
+
+	const handlePageChange = (newPage) => {
+		if (newPage >= 1 && newPage <= totalPages) {
+			setCurrentPage(newPage);
+		}
+	};
+
+	const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+	const displayedProducts = products.slice(
+		startIndex,
+		startIndex + ITEMS_PER_PAGE
+	);
 
 	const formatPrice = (price) => {
 		return new Intl.NumberFormat("vi-VN").format(price);
@@ -177,7 +195,7 @@ const ProductManagement = () => {
 								<thead>
 									<tr className="bg-gray-50">
 										<th className="border p-3 text-left">
-											ID
+											STT
 										</th>
 										<th className="border p-3 text-left">
 											Hình ảnh
@@ -197,13 +215,13 @@ const ProductManagement = () => {
 									</tr>
 								</thead>
 								<tbody>
-									{products.map((product) => (
+									{displayedProducts.map((product, index) => (
 										<tr
 											key={product.id}
 											className="hover:bg-gray-50"
 										>
 											<td className="border p-3">
-												{product.id}
+												{startIndex + index + 1}
 											</td>
 											<td className="border p-3">
 												<img
@@ -271,19 +289,35 @@ const ProductManagement = () => {
 
 						{/* Pagination */}
 						<div className="flex items-center justify-center space-x-2 mt-4">
-							<button className="p-2 border rounded hover:bg-gray-100">
+							<button
+								className="p-2 border rounded hover:bg-gray-100"
+								onClick={() =>
+									handlePageChange(currentPage - 1)
+								}
+								disabled={currentPage === 1}
+							>
 								<ChevronLeft className="w-4 h-4" />
 							</button>
-							<button className="p-2 border rounded bg-blue-500 text-white">
-								1
-							</button>
-							<button className="p-2 border rounded hover:bg-gray-100">
-								2
-							</button>
-							<button className="p-2 border rounded hover:bg-gray-100">
-								3
-							</button>
-							<button className="p-2 border rounded hover:bg-gray-100">
+							{[...Array(totalPages)].map((_, index) => (
+								<button
+									key={index}
+									className={`p-2 border rounded ${
+										currentPage === index + 1
+											? "bg-blue-500 text-white"
+											: "hover:bg-gray-100"
+									}`}
+									onClick={() => handlePageChange(index + 1)}
+								>
+									{index + 1}
+								</button>
+							))}
+							<button
+								className="p-2 border rounded hover:bg-gray-100"
+								onClick={() =>
+									handlePageChange(currentPage + 1)
+								}
+								disabled={currentPage === totalPages}
+							>
 								<ChevronRight className="w-4 h-4" />
 							</button>
 						</div>
