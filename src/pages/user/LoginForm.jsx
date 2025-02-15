@@ -1,10 +1,14 @@
+import axios from "axios";
 import { useState } from "react";
+import { Link, useNavigate } from "react-router";
 
 const LoginForm = () => {
 	const [formData, setFormData] = useState({
-		email: "",
+		username: "",
 		password: "",
 	});
+	const [error, setError] = useState(null);
+	const navigate = useNavigate();
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
@@ -14,10 +18,36 @@ const LoginForm = () => {
 		}));
 	};
 
-	const handleSubmit = (e) => {
+	const handleSubmit = async (e) => {
 		e.preventDefault();
-		// Handle login logic here
-		console.log("Login attempt with:", formData);
+		setError(null);
+		// setLoading(true); // Bật loading khi gửi request
+
+		try {
+			const response = await axios.post("/Auth/login", {
+				username: formData.username, // API yêu cầu "username" thay vì "email"
+				password: formData.password,
+			});
+
+			console.log(response);
+
+			// Nếu API trả về token hợp lệ
+			if (response.data.token) {
+				localStorage.setItem("token", response.data.token);
+				localStorage.setItem("role", "user");
+				localStorage.setItem("username", response.data.username);
+				localStorage.setItem("userId", response.data.userId);
+				localStorage.setItem("cartId", response.data.cartId);
+
+				navigate("/"); // Chuyển hướng đến trang admin
+			} else {
+				setError("Đăng nhập thất bại, vui lòng thử lại.");
+			}
+		} catch (err) {
+			setError(
+				err.response?.data?.message || "Email hoặc mật khẩu không đúng!"
+			);
+		}
 	};
 
 	return (
@@ -42,12 +72,12 @@ const LoginForm = () => {
 				</div>
 
 				<div>
-					<a
-						href="/"
+					<Link
+						to="/"
 						className="text-gray-800 inline-flex items-center mt-8 hover:opacity-80 transition-opacity"
 					>
 						← Trang chủ
-					</a>
+					</Link>
 				</div>
 			</div>
 
@@ -59,10 +89,10 @@ const LoginForm = () => {
 						className="flex flex-col gap-4"
 					>
 						<input
-							type="email"
-							name="email"
-							placeholder="Email"
-							value={formData.email}
+							type="text"
+							name="username"
+							placeholder="Username"
+							value={formData.username}
 							onChange={handleChange}
 							className="p-3 rounded-md border-none bg-white focus:outline-none focus:ring-2 focus:ring-white/50"
 						/>
@@ -80,15 +110,20 @@ const LoginForm = () => {
 						>
 							Đăng nhập
 						</button>
+						{error && (
+							<p className="text-red-500 font-semibold text-sm mt-2">
+								{error}
+							</p>
+						)}
 					</form>
 					<p className="text-center mt-20 text-black">
 						Chưa có tài khoản?{" "}
-						<a
-							href="/registration"
+						<Link
+							to="/registration"
 							className="underline hover:opacity-80 transition-opacity"
 						>
 							Đăng ký
-						</a>
+						</Link>
 					</p>
 				</div>
 			</div>

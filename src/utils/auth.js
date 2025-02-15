@@ -14,3 +14,10 @@ export const logout = () => {
 	localStorage.removeItem("role");
 	window.location.href = "/login/admin"; // Chuyển hướng về trang đăng nhập
 };
+
+export const logoutUser = () => {
+	// localStorage.removeItem("token");
+	// localStorage.removeItem("role");
+	localStorage.clear();
+	window.location.href = "/login"; // Chuyển hướng về trang đăng nhập
+};

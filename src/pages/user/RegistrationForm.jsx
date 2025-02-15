@@ -1,4 +1,6 @@
+import axios from "axios";
 import { useState } from "react";
+import { Link } from "react-router";
 
 const RegisterForm = () => {
 	const [formData, setFormData] = useState({
@@ -10,6 +12,8 @@ const RegisterForm = () => {
 		confirmPassword: "",
 	});
 
+	const [message, setMessage] = useState("");
+
 	const handleChange = (e) => {
 		const { name, value } = e.target;
 		setFormData((prevState) => ({
@@ -18,15 +22,37 @@ const RegisterForm = () => {
 		}));
 	};
 
-	const handleSubmit = (e) => {
+	const handleSubmit = async (e) => {
 		e.preventDefault();
-		// Validate passwords match
 		if (formData.password !== formData.confirmPassword) {
-			alert("Mật khẩu không khớp!");
+			setMessage("Mật khẩu không khớp!");
 			return;
 		}
-		// Handle registration logic here
-		console.log("Registration attempt with:", formData);
+
+		try {
+			const response = await axios.post("/Auth/register", {
+				username: formData.username,
+				email: formData.email,
+				password: formData.password,
+			});
+
+			if (response.data.token) {
+				localStorage.setItem("token", response.data.token);
+				localStorage.setItem("role", "user");
+			}
+			setMessage("Đăng ký thành công! Vui lòng kiểm tra email.");
+			setFormData({
+				fullName: "",
+				email: "",
+				phone: "",
+				username: "",
+				password: "",
+				confirmPassword: "",
+			});
+		} catch (error) {
+			console.log(error);
+			setMessage("Đăng ký thất bại. Vui lòng thử lại!");
+		}
 	};
 
 	return (
@@ -121,20 +147,21 @@ const RegisterForm = () => {
 						/>
 						<button
 							type="submit"
-							className="p-3 bg-gradient-to-r from-[#2193B0] to-[#6DD5ED] bg-white text-black rounded-md font-medium hover:bg-gray-50 transition-colors mt-2"
+							className="p-3 bg-gradient-to-r from-[#2193B0] to-[#6DD5ED] hover:opacity-90 text-black rounded-md font-medium cursor-pointer transition-colors mt-2"
 						>
 							Đăng ký
 						</button>
 					</form>
 					<p className="text-center mt-4 text-white">
 						Đã có tài khoản?{" "}
-						<a
-							href="/login"
+						<Link
+							to="/login"
 							className="underline hover:opacity-80 transition-opacity"
 						>
 							Đăng nhập
-						</a>
+						</Link>
 					</p>
+					<p className="text-center mt-4 text-red-500">{message}</p>
 				</div>
 			</div>
 		</div>

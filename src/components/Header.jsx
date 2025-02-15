@@ -2,6 +2,7 @@ import axios from "axios";
 import { ShoppingBag, Search, User, Clock, LogOut } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
+import { logoutUser } from "../utils/auth";
 
 const Header = () => {
 	const [brands, setBrands] = useState([]);
@@ -10,11 +11,18 @@ const Header = () => {
 		axios.get("Brands").then((response) => setBrands(response.data));
 	}, []);
 
-	console.log(brands);
+	const username = localStorage.getItem("username");
+	// const userId = localStorage.getItem("userId");
+	// const cartId = localStorage.getItem("cartId");
 
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
 	const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
+
+	const handleLogout = () => {
+		logoutUser();
+	};
+
 	return (
 		<header className="w-full">
 			<div className="container mx-auto ">
@@ -53,50 +61,56 @@ const Header = () => {
 					{/* User Actions */}
 					<div className="flex items-center gap-4 text-white">
 						{/* Check loggedIn */}
-						<span className="hidden md:inline-block font-semibold">
-							Xin chào Hy
-						</span>
-						<div className="relative">
-							<button
-								onClick={toggleDropdown}
-								className="hover:text-[#6DD5ED] transition-colors focus:outline-none cursor-pointer"
-							>
-								<User className="h-5 w-5" />
-							</button>
-							{isDropdownOpen && (
-								<div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10">
-									<Link
-										to="/profile"
-										className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-										onClick={toggleDropdown}
-									>
-										<User className="inline-block mr-2 h-4 w-4" />
-										Tài khoản của bạn
-									</Link>
-									<Link
-										to="/purchase-history"
-										className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-										onClick={toggleDropdown}
-									>
-										<Clock className="inline-block mr-2 h-4 w-4" />
-										Lịch sử mua hàng
-									</Link>
-									<Link to="/login">
-										<button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-											<LogOut className="inline-block mr-2 h-4 w-4" />
-											Đăng xuất
-										</button>
-									</Link>
-								</div>
-							)}
-						</div>
-						<Link to="/cart">
-							<button
-								size="icon"
-								className="cursor-pointer hover:text-[#6DD5ED] transition-colors"
-							>
-								<ShoppingBag className="h-5 w-5" />
-							</button>
+						{username ? (
+							<span className="hidden md:inline-block font-semibold">
+								{username}
+							</span>
+						) : (
+							<Link to="/login" className="hover:text-[#6DD5ED]">
+								Đăng nhập
+							</Link>
+						)}
+						{username && (
+							<div className="relative">
+								<button
+									onClick={toggleDropdown}
+									className="hover:text-[#6DD5ED] transition-colors focus:outline-none cursor-pointer"
+								>
+									<User className="h-5 w-5" />
+								</button>
+								{isDropdownOpen && (
+									<div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10">
+										<Link
+											to="/profile"
+											className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+											onClick={toggleDropdown}
+										>
+											<User className="inline-block mr-2 h-4 w-4" />
+											Tài khoản của bạn
+										</Link>
+										<Link
+											to="/purchase-history"
+											className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+											onClick={toggleDropdown}
+										>
+											<Clock className="inline-block mr-2 h-4 w-4" />
+											Lịch sử mua hàng
+										</Link>
+										<Link to="/login">
+											<button
+												className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+												onClick={handleLogout}
+											>
+												<LogOut className="inline-block mr-2 h-4 w-4" />
+												Đăng xuất
+											</button>
+										</Link>
+									</div>
+								)}
+							</div>
+						)}
+						<Link to="/cart" className="">
+							<ShoppingBag className="h-5 w-5 cursor-pointer hover:text-[#6DD5ED] transition-colors" />
 						</Link>
 					</div>
 				</div>
