@@ -80,31 +80,25 @@ export default function Homepage() {
 				const skus = skusRes.data;
 
 				// Chuyển đổi dữ liệu thành object map để tra cứu nhanh
-				// 				const skuMap = skus.reduce((acc, sku) => {
-				// 					acc[sku.id] = sku;
-				// 					return acc;
-				// 				}, {});
-				// 				// console.log("skuMap", skuMap);
-				//
-				// 				const productMap = products.reduce((acc, product) => {
-				// 					acc[product.id] = product;
-				// 					return acc;
-				// 				}, {});
-				// 				// console.log("productMap", productMap);
-				//
-				// 				const imageMap = images.reduce((acc, image) => {
-				// 					acc[image.productId] = image;
-				// 					return acc;
-				// 				}, {});
+				const imageMap = images.reduce((acc, image) => {
+					acc[image.productId] = image;
+					return acc;
+				}, {});
 
 				// Gộp dữ liệu dựa trên ProductId
-				const mergedProducts = products.map((product) => ({
-					...product,
-					images: images.filter(
-						(img) => img.productId === product.id
-					),
-					skus: skus.filter((sku) => sku.productId === product.id),
-				}));
+				const mergedProducts = products
+					.map((product) => ({
+						...product,
+						// images: images.filter(
+						// 	(img) => img.productId === product.id
+						// ),
+						images: imageMap[product.id] || {},
+						skus: skus.filter(
+							(sku) => sku.productId === product.id
+						),
+					}))
+					.sort((a, b) => b.sold - a.sold) // Sắp xếp giảm dần theo sold
+					.slice(0, 8); // Lấy 8 sản phẩm
 
 				setProducts(mergedProducts);
 			})

@@ -12,51 +12,30 @@ const priceRanges = [
 	{ id: "above20m", label: "Trên 20 triệu" },
 ];
 
-export default function MediaPhoneList() {
+export default function SearchPhone() {
 	const [selectedPriceRange, setSelectedPriceRange] = useState("all");
 	const [showAll, setShowAll] = useState(false);
 	const [sortOrder, setSortOrder] = useState("default");
 
-	const { brand } = useParams(); // Lấy branch từ URL params
+	const { keyword } = useParams(); // Lấy keyword từ URL params
 	const [allProducts, setAllProducts] = useState([]);
 
 	useEffect(() => {
-		if (!brand) return;
-
 		// Bước 1: Lấy branchID từ tên branch
 		axios
-			.get("/Brands")
-			.then((brandRes) => {
-				const brandData = brandRes.data;
-				const foundBrand = brandData.find(
-					(b) => b.name.toLowerCase() === brand.toLowerCase()
-				);
+			.get(`/Products/search?keyword=${keyword}`)
+			.then((searchProductRes) => {
+				const searchProduct = searchProductRes.data;
 
-				if (!foundBrand) {
-					console.log("Không tìm thấy thương hiệu");
-					return;
-				}
-
-				const brandID = foundBrand.id;
-
-				// Bước 2: Gọi API lấy danh sách sản phẩm theo brandID
+				// Bước 2: Gọi API lấy danh sách sản phẩm theo ProductId
 				return Promise.all([
-					axios.get("/Products"),
 					axios.get("/Product_SKU"),
 					axios.get("/Product_Image"),
-				]).then(([productsRes, skusRes, imagesRes]) => {
-					const allProducts = productsRes.data;
+				]).then(([skusRes, imagesRes]) => {
 					const allSkus = skusRes.data;
 					const allImages = imagesRes.data;
 
-					// Bước 3: Lọc sản phẩm theo brandID
-					const filteredProducts = allProducts.filter(
-						(product) => product.brandId === brandID
-					);
-
-					console.log(filteredProducts);
-
-					// Bước 4: Chuyển SKU & Images thành Map để tìm kiếm nhanh
+					// Bước 3: Chuyển SKU & Images thành Map để tìm kiếm nhanh
 					const skuMap = allSkus.reduce((acc, sku) => {
 						acc[sku.productId] = sku;
 						return acc;
@@ -68,7 +47,7 @@ export default function MediaPhoneList() {
 					}, {});
 
 					// Bước 5: Merge dữ liệu sản phẩm
-					const mergedProducts = filteredProducts.map((product) => ({
+					const mergedProducts = searchProduct.map((product) => ({
 						...product,
 						sku: skuMap[product.id] || null,
 						image: imageMap[product.id] || null,
@@ -80,7 +59,7 @@ export default function MediaPhoneList() {
 			.catch((err) => {
 				console.error("Lỗi tải dữ liệu:", err);
 			});
-	}, [brand]);
+	}, [keyword]);
 
 	console.log(allProducts);
 
@@ -158,7 +137,7 @@ export default function MediaPhoneList() {
 				<div className="md:col-span-3">
 					<div className="flex justify-between items-center mb-6">
 						<h1 className="text-xl font-bold">
-							{brand} ({filteredProducts.length} sản phẩm)
+							({filteredProducts.length} sản phẩm)
 						</h1>
 						<select
 							className="border rounded-md px-3 py-1"
@@ -189,7 +168,10 @@ export default function MediaPhoneList() {
 									{product.name}
 								</h3>
 								<p className="text-red-600 font-bold text-center mb-4">
-									{formatPrice(product.sku?.defaultPrice)}
+									{formatPrice(
+										product.sku?.finalPrice ||
+											product.sku?.defaultPrice
+									)}
 								</p>
 								<div className="grid grid-cols-2 gap-2">
 									<Link to={`/product/${product.id}`}>

@@ -1,12 +1,14 @@
 import axios from "axios";
 import { ShoppingBag, Search, User, Clock, LogOut } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { logoutUser } from "../utils/auth";
 
 const Header = () => {
 	const [brands, setBrands] = useState([]);
 	const [username, setUsername] = useState("");
+	const [keyword, setKeyword] = useState(""); // State để lưu keyword
+	const navigate = useNavigate();
 
 	useEffect(() => {
 		axios.get("Brands").then((response) => setBrands(response.data));
@@ -24,6 +26,18 @@ const Header = () => {
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
 	const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
+
+	const handleKeyDown = (e) => {
+		if (e.key == "Enter") {
+			handleSearch();
+		}
+	};
+
+	const handleSearch = () => {
+		if (keyword.trim() !== "") {
+			navigate(`/search/${keyword}`);
+		}
+	};
 
 	const handleLogout = () => {
 		logoutUser();
@@ -50,13 +64,16 @@ const Header = () => {
 								<input
 									type="search"
 									placeholder="Nhập thứ cần tìm..."
-									className="w-full pl-4 pr-10 p-1"
+									className="w-full pl-3 pr-3 p-1"
+									onChange={(e) => setKeyword(e.target.value)}
+									onKeyDown={handleKeyDown}
 								/>
 							</div>
 							<div>
 								<button
 									size="icon"
-									className="bg-gradient-to-r from-[#2193B0] to-[#6DD5ED] text-white py-2 px-4 rounded"
+									className="bg-gradient-to-r from-[#2193B0] to-[#6DD5ED] hover:opacity-90 text-white py-2 px-4 cursor-pointer rounded"
+									onClick={handleSearch}
 								>
 									<Search className="h-4 w-4" />
 								</button>

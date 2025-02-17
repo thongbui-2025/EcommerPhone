@@ -18,6 +18,7 @@ import AdminPage from "./pages/admin/AdminPage.jsx";
 import LoginPage from "./pages/admin/LoginPage.jsx";
 import axios from "axios";
 import SendMail from "./utils/sendMail.jsx";
+import SearchPhone from "./components/SearchPhone/index.jsx";
 
 axios.defaults.baseURL = "https://localhost:7011/api/";
 
@@ -36,6 +37,10 @@ const router = createBrowserRouter([
 			{
 				path: "/:brand",
 				element: <MediaPhoneList />,
+			},
+			{
+				path: "/search/:keyword",
+				element: <SearchPhone />,
 			},
 			{
 				path: "/cart",

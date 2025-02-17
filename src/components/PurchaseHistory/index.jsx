@@ -15,11 +15,11 @@ const PurchaseHistory = () => {
 			axios.get("/Product_Image"),
 		]).then(([orderRes, orderItemRes, skusRes, productsRes, imagesRes]) => {
 			const orders = orderRes.data;
-			console.log("orders", orders);
+			// console.log("orders", orders);
 			const orderItems = orderItemRes.data;
-			console.log("orderItems", orderItems);
+			// console.log("orderItems", orderItems);
 			const skus = skusRes.data;
-			console.log("skus", skus);
+			// console.log("skus", skus);
 			const products = productsRes.data;
 			// console.log("products", products);
 			const images = imagesRes.data;
