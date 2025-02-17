@@ -1,6 +1,6 @@
-import { ArrowLeft, Edit, Trash2 } from "lucide-react";
+import { ArrowLeft, Edit } from "lucide-react";
 
-const CustomerDetails = ({ customer, onBack, onEdit, onDelete }) => {
+const CustomerDetails = ({ customer, onBack, onEdit }) => {
 	return (
 		<div className="flex-1 p-8">
 			<div className="bg-white rounded-lg shadow">
@@ -32,7 +32,7 @@ const CustomerDetails = ({ customer, onBack, onEdit, onDelete }) => {
 											Họ và tên:
 										</label>
 										<p className="font-medium">
-											{customer.name}
+											{customer.userName}
 										</p>
 									</div>
 									<div>
@@ -48,7 +48,7 @@ const CustomerDetails = ({ customer, onBack, onEdit, onDelete }) => {
 											Số điện thoại:
 										</label>
 										<p className="font-medium">
-											{customer.phone}
+											{customer.phoneNumber}
 										</p>
 									</div>
 									<div>
@@ -72,13 +72,13 @@ const CustomerDetails = ({ customer, onBack, onEdit, onDelete }) => {
 								<Edit className="w-4 h-4" />
 								Sửa thông tin
 							</button>
-							<button
+							{/* <button
 								onClick={onDelete}
 								className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 flex items-center gap-2"
 							>
 								<Trash2 className="w-4 h-4" />
 								Xóa khách hàng
-							</button>
+							</button> */}
 						</div>
 					</div>
 				</div>

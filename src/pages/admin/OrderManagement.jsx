@@ -9,6 +9,7 @@ const OrderManagement = () => {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [selectedStatus, setSelectedStatus] = useState("all");
 	const [orders, setOrders] = useState([]);
+	const [selectedOrder, setSelectedOrder] = useState(null);
 
 	useEffect(() => {
 		Promise.all([
@@ -101,8 +102,6 @@ const OrderManagement = () => {
 		const options = { year: "numeric", month: "2-digit", day: "2-digit" };
 		return new Date(dateString).toLocaleDateString("vi-VN", options);
 	};
-
-	const [selectedOrder, setSelectedOrder] = useState(null);
 
 	const formatPrice = (price) => {
 		return new Intl.NumberFormat("vi-VN").format(price);

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
 	Search,
 	ChevronLeft,
@@ -9,30 +9,30 @@ import {
 } from "lucide-react";
 import UpdateCustomer from "../../admin_components/CustomerManagement/UpdateCustomer";
 import CustomerDetails from "../../admin_components/CustomerManagement/CustomerDetails";
+import axios from "axios";
+
+const ITEMS_PER_PAGE = 10;
 
 const CustomerManagement = () => {
 	const [searchQuery, setSearchQuery] = useState("");
-	const [customers, setCustomers] = useState([
-		{
-			id: 1,
-			name: "Tuong",
-			email: "Tuong@mail.com",
-			phone: "0903607077",
-			address: "123 Đường ABC, Quận 1, TP.HCM",
-		},
-		{
-			id: 2,
-			name: "Huy",
-			email: "Huy@mail.com",
-			phone: "0903607077",
-			address: "456 Đường XYZ, Quận 2, TP.HCM",
-		},
-	]);
+	const [customers, setCustomers] = useState([]);
 
 	const [selectedCustomer, setSelectedCustomer] = useState(null);
 	const [isEditing, setIsEditing] = useState(false);
 	const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 	const [customerToDelete, setCustomerToDelete] = useState(null);
+	const [currentPage, setCurrentPage] = useState(1);
+
+	useEffect(() => {
+		axios
+			.get("/Auth")
+			.then((response) => {
+				setCustomers(response.data);
+			})
+			.catch((error) => {
+				console.log(error);
+			});
+	}, []);
 
 	const handleSearch = (e) => {
 		e.preventDefault();
@@ -50,13 +50,17 @@ const CustomerManagement = () => {
 	};
 
 	const handleUpdateCustomer = (updatedCustomer) => {
-		setCustomers(
-			customers.map((c) =>
-				c.id === updatedCustomer.id ? updatedCustomer : c
-			)
-		);
-		setSelectedCustomer(updatedCustomer);
-		setIsEditing(false);
+		axios.put(`/Auth/${updatedCustomer.id}`, updatedCustomer).then(() => {
+			setCustomers((prevCustomer) =>
+				prevCustomer.map((customer) =>
+					customer.id === updatedCustomer.id
+						? { ...customer, ...updatedCustomer }
+						: customer
+				)
+			);
+			setSelectedCustomer(updatedCustomer);
+			setIsEditing(false);
+		});
 	};
 
 	const handleDeleteClick = (customer) => {
@@ -91,6 +95,21 @@ const CustomerManagement = () => {
 			/>
 		);
 	}
+
+	// Logic pagination
+	const totalPages = Math.ceil(customers.length / ITEMS_PER_PAGE);
+
+	const handlePageChange = (newPage) => {
+		if (newPage >= 1 && newPage <= totalPages) {
+			setCurrentPage(newPage);
+		}
+	};
+
+	const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+	const displayedCustomers = customers.slice(
+		startIndex,
+		startIndex + ITEMS_PER_PAGE
+	);
 
 	return (
 		<div className="flex-1 p-8">
@@ -129,7 +148,9 @@ const CustomerManagement = () => {
 						<table className="w-full border-collapse">
 							<thead>
 								<tr className="bg-gray-50">
-									<th className="border p-3 text-left">ID</th>
+									<th className="border p-3 text-left">
+										STT
+									</th>
 									<th className="border p-3 text-left">
 										Họ và tên
 									</th>
@@ -145,22 +166,22 @@ const CustomerManagement = () => {
 								</tr>
 							</thead>
 							<tbody>
-								{customers.map((customer) => (
+								{displayedCustomers.map((customer, index) => (
 									<tr
 										key={customer.id}
 										className="hover:bg-gray-50"
 									>
 										<td className="border p-3">
-											{customer.id}
+											{startIndex + index + 1}
 										</td>
 										<td className="border p-3">
-											{customer.name}
+											{customer.userName}
 										</td>
 										<td className="border p-3">
 											{customer.email}
 										</td>
 										<td className="border p-3">
-											{customer.phone}
+											{customer.phoneNumber}
 										</td>
 										<td className="border p-3">
 											<div className="flex items-center gap-2">
@@ -207,19 +228,31 @@ const CustomerManagement = () => {
 
 					{/* Pagination */}
 					<div className="flex items-center justify-center space-x-2 mt-4">
-						<button className="p-2 border rounded hover:bg-gray-100">
+						<button
+							className="p-2 border rounded hover:bg-gray-100"
+							onClick={() => handlePageChange(currentPage - 1)}
+							disabled={currentPage === 1}
+						>
 							<ChevronLeft className="w-4 h-4" />
 						</button>
-						<button className="p-2 border rounded bg-blue-500 text-white">
-							1
-						</button>
-						<button className="p-2 border rounded hover:bg-gray-100">
-							2
-						</button>
-						<button className="p-2 border rounded hover:bg-gray-100">
-							3
-						</button>
-						<button className="p-2 border rounded hover:bg-gray-100">
+						{[...Array(totalPages)].map((_, index) => (
+							<button
+								key={index}
+								className={`p-2 border rounded ${
+									currentPage === index + 1
+										? "bg-blue-500 text-white"
+										: "hover:bg-gray-100"
+								}`}
+								onClick={() => handlePageChange(index + 1)}
+							>
+								{index + 1}
+							</button>
+						))}
+						<button
+							className="p-2 border rounded hover:bg-gray-100"
+							onClick={() => handlePageChange(currentPage + 1)}
+							disabled={currentPage === totalPages}
+						>
 							<ChevronRight className="w-4 h-4" />
 						</button>
 					</div>

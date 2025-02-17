@@ -4,9 +4,9 @@ import { ArrowLeft } from "lucide-react";
 const UpdateCustomer = ({ customer, onBack, onUpdate }) => {
 	const [formData, setFormData] = useState({
 		id: customer.id,
-		name: customer.name,
+		userName: customer.userName,
 		email: customer.email,
-		phone: customer.phone,
+		phoneNumber: customer.phoneNumber,
 		address: customer.address,
 	});
 
@@ -54,8 +54,8 @@ const UpdateCustomer = ({ customer, onBack, onUpdate }) => {
 										</label>
 										<input
 											type="text"
-											name="name"
-											value={formData.name}
+											name="userName"
+											value={formData.userName}
 											onChange={handleChange}
 											className="w-full p-2 border rounded"
 											required
@@ -80,8 +80,8 @@ const UpdateCustomer = ({ customer, onBack, onUpdate }) => {
 										</label>
 										<input
 											type="tel"
-											name="phone"
-											value={formData.phone}
+											name="phoneNumber"
+											value={formData.phoneNumber}
 											onChange={handleChange}
 											className="w-full p-2 border rounded"
 											required
