@@ -26,7 +26,11 @@ const ProductDetails = ({ product, onBack }) => {
 					{/* Product Image */}
 					<div>
 						<img
-							src={product.image || "/placeholder.svg"}
+							src={
+								"https://localhost:7011/uploads/" +
+									product.images.imageName ||
+								"/placeholder.svg"
+							}
 							alt={product.name}
 							className="w-full h-auto object-cover rounded-lg"
 						/>

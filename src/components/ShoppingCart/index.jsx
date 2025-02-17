@@ -99,7 +99,8 @@ export default function ShoppingCart() {
 										<div className="flex items-center gap-4">
 											<img
 												src={
-													item.image ||
+													"https://localhost:7011/uploads/" +
+														item.image ||
 													"/placeholder.svg"
 												}
 												alt={item.name}

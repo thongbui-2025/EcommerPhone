@@ -179,7 +179,8 @@ export default function MediaPhoneList() {
 							>
 								<img
 									src={
-										product.image.imageName ||
+										"https://localhost:7011/uploads/" +
+											product.image.imageName ||
 										"/placeholder.svg"
 									}
 									alt={product.name}
@@ -189,7 +190,10 @@ export default function MediaPhoneList() {
 									{product.name}
 								</h3>
 								<p className="text-red-600 font-bold text-center mb-4">
-									{formatPrice(product.sku?.defaultPrice)}
+									{formatPrice(
+										product.sku?.finalPrice ||
+											product.sku?.defaultPrice
+									)}
 								</p>
 								<div className="grid grid-cols-2 gap-2">
 									<Link to={`/product/${product.id}`}>

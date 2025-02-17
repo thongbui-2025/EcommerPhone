@@ -9,7 +9,7 @@ const ITEMS_PER_PAGE = 10;
 
 const ProductManagement = () => {
 	const [searchQuery, setSearchQuery] = useState("");
-	const [selectedCategory, setSelectedCategory] = useState("all");
+	// const [selectedCategory, setSelectedCategory] = useState("all");
 	const [showCreateForm, setShowCreateForm] = useState(false);
 	const [selectedProduct, setSelectedProduct] = useState(null);
 	const [productToUpdate, setProductToUpdate] = useState(null);
@@ -28,12 +28,18 @@ const ProductManagement = () => {
 				const images = imagesRes.data;
 				const skus = skusRes.data;
 
+				const imageMap = images.reduce((acc, image) => {
+					acc[image.productId] = image;
+					return acc;
+				}, {});
+
 				// Gộp dữ liệu dựa trên ProductId
 				const mergedProducts = products.map((product) => ({
 					...product,
-					images: images.filter(
-						(img) => img.ProductId === product.Id
-					),
+					// images: images.filter(
+					// 	(img) => img.ProductId === product.Id
+					// ),
+					images: imageMap[product.id] || {},
 					skus: skus.filter((sku) => sku.ProductId === product.Id),
 				}));
 
@@ -42,7 +48,7 @@ const ProductManagement = () => {
 			.catch((error) => console.error("Lỗi khi lấy dữ liệu:", error));
 	}, []);
 
-	// console.log(products);
+	console.log(products);
 
 	// Logic pagination
 	const [currentPage, setCurrentPage] = useState(1);
@@ -118,27 +124,6 @@ const ProductManagement = () => {
 
 	return (
 		<div className="flex min-h-screen bg-gray-100">
-			{/* Sidebar */}
-			{/* <div className="w-64 bg-gray-800 text-white">
-				<div className="p-4">
-					{menuItems.map((item) => (
-						<div
-							key={item.id}
-							className={`flex items-center space-x-2 p-3 rounded cursor-pointer ${
-								selectedMenuItem === item.id
-									? "bg-gray-700"
-									: "hover:bg-gray-700"
-							}`}
-							onClick={() => setSelectedMenuItem(item.id)}
-						>
-							<span>{item.icon}</span>
-							<span>{item.label}</span>
-							<ChevronDown className="w-4 h-4 ml-auto" />
-						</div>
-					))}
-				</div>
-			</div> */}
-
 			{/* Main Content */}
 			<div className="flex-1 p-8">
 				<div className="bg-white rounded-lg shadow">
@@ -172,7 +157,7 @@ const ProductManagement = () => {
 								</button>
 							</div>
 
-							<select
+							{/* <select
 								value={selectedCategory}
 								onChange={(e) =>
 									setSelectedCategory(e.target.value)
@@ -186,7 +171,7 @@ const ProductManagement = () => {
 
 							<button className="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-700">
 								Đặt lại
-							</button>
+							</button> */}
 						</div>
 
 						{/* Products Table */}
@@ -226,7 +211,9 @@ const ProductManagement = () => {
 											<td className="border p-3">
 												<img
 													src={
-														product.image ||
+														"https://localhost:7011/uploads/" +
+															product.images
+																.imageName ||
 														"/placeholder.svg"
 													}
 													alt={product.name}

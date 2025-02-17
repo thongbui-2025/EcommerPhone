@@ -2,14 +2,17 @@ import { SearchCode, ShoppingCart } from "lucide-react";
 import { Link } from "react-router";
 
 const ProductCard = ({ id, images, name, skus }) => {
-	// console.log(images[0].imageName);
+	console.log(images.imageName);
 	console.log(skus);
 
 	return (
 		<div className="mx-2 rounded-lg bg-white p-4 shadow-md">
 			<div className="relative">
 				<img
-					src={images.imageName || "/placeholder.svg"}
+					src={
+						"https://localhost:7011/uploads/" + images.imageName ||
+						"/placeholder.svg"
+					}
 					// src="https://cdn2.cellphones.com.vn/insecure/rs:fill:0:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/7/3/733535867.jpeg"
 					alt={name}
 					className="w-full rounded-lg object-cover"
@@ -29,9 +32,9 @@ const ProductCard = ({ id, images, name, skus }) => {
 			</div>
 			<div className="mt-4 text-center">
 				<h3 className="text-lg font-semibold">{name}</h3>
-				{/* <p className="text-red-600 font-semibold">
+				<p className="text-red-600 font-semibold">
 					{skus[0].finalPrice || skus[0].defaultPrice}
-				</p> */}
+				</p>
 			</div>
 		</div>
 	);

@@ -158,7 +158,8 @@ export default function SearchPhone() {
 							>
 								<img
 									src={
-										product.image.imageName ||
+										"https://localhost:7011/uploads/" +
+											product.image.imageName ||
 										"/placeholder.svg"
 									}
 									alt={product.name}

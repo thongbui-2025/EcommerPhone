@@ -112,12 +112,11 @@ export default function ProductDetails() {
 						<h1 className="text-2xl font-bold">{product.name}</h1>
 						<div className="aspect-square relative">
 							<img
-								// src={
-								// 	"https://localhost:7011/uploads/" +
-								// 		product?.images?.[0]?.imageName ||
-								//
-								// }
-								src="https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/d/i/dien-thoai-xiaomi-redmi-note-14_2__2.png"
+								src={
+									"https://localhost:7011/uploads/" +
+									product?.images?.[0]?.imageName
+								}
+								// src="https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/d/i/dien-thoai-xiaomi-redmi-note-14_2__2.png"
 								alt="iPhone 12"
 								className="w-full h-full object-contain"
 							/>

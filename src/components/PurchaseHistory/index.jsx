@@ -116,7 +116,8 @@ const PurchaseHistory = () => {
 							<div key={item.id} className="flex gap-4">
 								<img
 									src={
-										item.image.imageName ||
+										"https://localhost:7011/uploads/" +
+											item.image.imageName ||
 										"/placeholder.svg"
 									}
 									alt={item.name}

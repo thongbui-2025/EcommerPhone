@@ -36,36 +36,6 @@ export default function Homepage() {
 		nextArrow: <CustomNextArrow />,
 	};
 
-	const productSettings = {
-		dots: false,
-		infinite: false,
-		speed: 500,
-		slidesToShow: 4,
-		slidesToScroll: 1,
-		prevArrow: <CustomPrevArrow />,
-		nextArrow: <CustomNextArrow />,
-		responsive: [
-			{
-				breakpoint: 1024,
-				settings: {
-					slidesToShow: 3,
-				},
-			},
-			{
-				breakpoint: 768,
-				settings: {
-					slidesToShow: 2,
-				},
-			},
-			{
-				breakpoint: 640,
-				settings: {
-					slidesToShow: 1,
-				},
-			},
-		],
-	};
-
 	const [products, setProducts] = useState([]);
 
 	useEffect(() => {
@@ -86,20 +56,14 @@ export default function Homepage() {
 				}, {});
 
 				// Gộp dữ liệu dựa trên ProductId
-				const mergedProducts = products
-					.map((product) => ({
-						...product,
-						// images: images.filter(
-						// 	(img) => img.productId === product.id
-						// ),
-						images: imageMap[product.id] || {},
-						skus: skus.filter(
-							(sku) => sku.productId === product.id
-						),
-					}))
-					.sort((a, b) => b.sold - a.sold) // Sắp xếp giảm dần theo sold
-					.slice(0, 8); // Lấy 8 sản phẩm
-
+				const mergedProducts = products.map((product) => ({
+					...product,
+					// images: images.filter(
+					// 	(img) => img.productId === product.id
+					// ),
+					images: imageMap[product.id] || {},
+					skus: skus.filter((sku) => sku.productId === product.id),
+				}));
 				setProducts(mergedProducts);
 			})
 			.catch((error) => console.error("Lỗi khi lấy dữ liệu:", error));
@@ -134,15 +98,15 @@ export default function Homepage() {
 				<div className="mb-6 flex items-center">
 					<div className="mr-2 h-6 w-1 bg-red-600"></div>
 					<h2 className="text-2xl font-bold text-red-600">
-						SẢN PHẨM HOT
+						SẢN PHẨM
 					</h2>
 				</div>
 
-				<Slider {...productSettings}>
+				<div className="grid grid-cols-4 gap-3">
 					{products.map((product, index) => (
 						<ProductCard key={index} {...product} />
 					))}
-				</Slider>
+				</div>
 			</div>
 		</div>
 	);
