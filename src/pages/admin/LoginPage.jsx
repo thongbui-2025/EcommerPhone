@@ -40,9 +40,12 @@ const LoginPage = () => {
 				setError("Đăng nhập thất bại, vui lòng thử lại.");
 			}
 		} catch (err) {
-			setError(
-				err.response?.data?.message || "Email hoặc mật khẩu không đúng!"
-			);
+			if (err.response?.status === 401) {
+				setError("Email hoặc mật khẩu không đúng!");
+			} else {
+				console.error("Lỗi khác:", err); // Chỉ log các lỗi khác ngoài 401
+				setError(err.response?.data?.message || "Đã có lỗi xảy ra!");
+			}
 		} finally {
 			setLoading(false);
 		}

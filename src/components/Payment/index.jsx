@@ -1,28 +1,30 @@
 import { useState } from "react";
 import { Edit2 } from "lucide-react";
 import VnPay from "./VnPay";
+// import { useParams } from "react-router";
 
 const Payment = () => {
 	const [selectedAddress, setSelectedAddress] = useState("default");
 	const [customAddress, setCustomAddress] = useState("");
 	const [paymentMethod, setPaymentMethod] = useState("cash");
 	const [showCompletePay, setShowCompletePay] = useState(false);
+	// const { cardId } = useParams("cardId");
 
-	const products = [
-		{
-			id: 1,
-			name: "iPhone 12 Mini 64GB",
-			image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-XZb0EdamED0thuP9ud1iYqkYJsG0k4.png",
-			quantity: 1,
-			price: 30000000,
-		},
-		{
-			id: 2,
-			name: "iPhone 11 Pro Max 64GB",
-			image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-XZb0EdamED0thuP9ud1iYqkYJsG0k4.png",
-			quantity: 1,
-			price: 20000000,
-		},
+	const [products, setProducts] = [
+		// {
+		// 	id: 1,
+		// 	name: "iPhone 12 Mini 64GB",
+		// 	image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-XZb0EdamED0thuP9ud1iYqkYJsG0k4.png",
+		// 	quantity: 1,
+		// 	price: 30000000,
+		// },
+		// {
+		// 	id: 2,
+		// 	name: "iPhone 11 Pro Max 64GB",
+		// 	image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-XZb0EdamED0thuP9ud1iYqkYJsG0k4.png",
+		// 	quantity: 1,
+		// 	price: 20000000,
+		// },
 	];
 
 	const totalAmount = products.reduce(

@@ -1,47 +1,142 @@
 import { ChevronDown, ChevronLeft } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
-
-const specifications = [
-	{ label: "Màn hình:", value: '6.1", Super Retina XDR' },
-	{ label: "Camera sau:", value: "12.0 MP + 12.0 MP" },
-	{ label: "Camera Selfie:", value: "12.0 MP" },
-	{ label: "RAM:", value: "4GB" },
-	{ label: "Bộ nhớ trong:", value: "128 GB" },
-	{ label: "CPU:", value: "A14 Bionic" },
-	{ label: "Dung lượng pin:", value: "2815 mAh" },
-	{ label: "Thẻ sim:", value: "2,1 eSIM, 1 Nano SIM" },
-	{ label: "Hệ điều hành:", value: "iOS 14" },
-];
+import axios from "axios";
 
 export default function ProductDetails() {
 	const [isExpanded, setIsExpanded] = useState(false);
 	const { id } = useParams();
 	console.log("productId:", id);
 
+	const [product, setProduct] = useState({
+		images: [],
+		skus: [],
+	});
+	const [selectedMemory, setSelectedMemory] = useState(null);
+	const [selectedColor, setSelectedColor] = useState(null);
+	const [selectedSku, setSelectedSku] = useState(null);
+
+	useEffect(() => {
+		Promise.all([
+			axios.get("/Products/" + id),
+			axios.get("/Product_Image/getByProduct/" + id),
+			axios.get("/Product_SKU/getByProduct/" + id),
+		])
+			.then(([productsRes, imagesRes, skusRes]) => {
+				const products = productsRes.data;
+				// console.log(products);
+				const images = imagesRes.data;
+				// console.log(images);
+				const skus = skusRes.data;
+				// console.log(skus);
+				const availableSkus = skus.filter(
+					(sku) => sku.quantity > 0 && sku.isAvailable
+				);
+
+				const mergedProduct = {
+					...products,
+					images: images,
+					skus: skus,
+				};
+
+				setProduct(mergedProduct);
+
+				if (availableSkus.length > 0) {
+					setSelectedMemory(availableSkus[0].raM_ROM);
+					setSelectedColor(availableSkus[0].color);
+					setSelectedSku(availableSkus[0]);
+				}
+			})
+			.catch((error) => console.error("Error fetching data:", error));
+	}, [id]);
+
+	// console.log(product);
+
+	const specifications = [
+		{ label: "Màn hình:", value: product?.display },
+		{ label: "Camera sau:", value: product?.rearCamera },
+		{ label: "Camera trước:", value: product?.frontCamera },
+		{ label: "Chipset:", value: product?.chip },
+		{ label: "Dung lượng pin:", value: product?.battery },
+		{ label: "Kích thước màn hình:", value: product?.size },
+		{ label: "Công nghệ sạc:", value: product?.charger },
+		{ label: "Kích thước, khối lượng:", value: product?.lxWxHxW },
+	];
+
+	const memories = [...new Set(product.skus.map((sku) => sku.raM_ROM))];
+	const availableColors = selectedMemory
+		? [
+				...new Set(
+					product.skus
+						.filter((sku) => sku.raM_ROM === selectedMemory)
+						.map((sku) => sku.color)
+				),
+		  ]
+		: [];
+
+	const handleMemorySelection = (memory) => {
+		setSelectedMemory(memory);
+		setSelectedColor(null);
+		const firstAvailableColor = product.skus.find(
+			(sku) => sku.raM_ROM === memory
+		)?.color;
+		if (firstAvailableColor) {
+			setSelectedColor(firstAvailableColor);
+			setSelectedSku(
+				product.skus.find(
+					(sku) =>
+						sku.raM_ROM === memory &&
+						sku.color === firstAvailableColor
+				)
+			);
+		}
+	};
+
+	const handleColorSelection = (color) => {
+		if (availableColors.includes(color)) {
+			setSelectedColor(color);
+			setSelectedSku(
+				product.skus.find(
+					(sku) =>
+						sku.raM_ROM === selectedMemory && sku.color === color
+				)
+			);
+		}
+	};
 	return (
 		<div className="container mx-auto px-4 py-8 max-w-6xl">
 			<div className="bg-white rounded-lg shadow-sm p-6">
 				<div className="grid md:grid-cols-2 gap-8">
 					{/* Left Column - Product Image */}
 					<div className="space-y-6">
-						<h1 className="text-2xl font-bold">iPhone 12 128GB</h1>
+						<h1 className="text-2xl font-bold">{product.name}</h1>
 						<div className="aspect-square relative">
 							<img
-								src="/placeholder.svg"
+								// src={
+								// 	"https://localhost:7011/uploads/" +
+								// 		product?.images?.[0]?.imageName ||
+								//
+								// }
+								src="https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/d/i/dien-thoai-xiaomi-redmi-note-14_2__2.png"
 								alt="iPhone 12"
 								className="w-full h-full object-contain"
 							/>
 						</div>
 						<div className="text-center">
 							<span className="text-3xl font-bold text-red-600">
-								30.990.000 đ
+								{/* 30.990.000 đ */}
+								{selectedSku && (
+									<h3 className="">
+										{selectedSku.quantity > 0 &&
+										selectedSku.isAvailable
+											? `${selectedSku.finalPrice.toLocaleString()} đ`
+											: "Hết hàng"}
+									</h3>
+								)}
 							</span>
 						</div>
 						<p className="text-gray-700 text-sm">
-							iPhone 12 ra mắt với vai trò mở ra một kỷ nguyên
-							hoàn toàn mới. Tốc độ mạng 5G siêu tốc, bộ vi xử lý
-							A14 Bionic mạnh nhất thế giới smartphone.
+							{product.description}
 						</p>
 						<div className="flex gap-4">
 							<Link to="/cart">
@@ -60,6 +155,55 @@ export default function ProductDetails() {
 
 					{/* Right Column - Specifications */}
 					<div>
+						<div className="p-4 font-sans">
+							<h3 className="mb-2">Chọn bộ nhớ</h3>
+							<div className="flex space-x-2 mb-4">
+								{memories.map((memory) => (
+									<div
+										key={memory}
+										className={`px-4 py-2 border-2 rounded-lg cursor-pointer ${
+											selectedMemory === memory
+												? "border-red-500 bg-red-100"
+												: "border-gray-300"
+										}`}
+										onClick={() =>
+											handleMemorySelection(memory)
+										}
+									>
+										{memory}
+									</div>
+								))}
+							</div>
+
+							<h3 className="mb-2">Chọn màu</h3>
+							<div className="flex space-x-2 mb-4">
+								{availableColors.map((color) => (
+									<div
+										key={color}
+										className={`px-4 py-2 border-2 rounded-lg cursor-pointer ${
+											selectedColor === color
+												? "border-red-500 bg-red-100"
+												: "border-gray-300"
+										}`}
+										onClick={() =>
+											handleColorSelection(color)
+										}
+									>
+										{color}
+									</div>
+								))}
+							</div>
+
+							{selectedSku && (
+								<h3 className="mt-4 text-lg font-semibold">
+									{selectedSku.quantity > 0 &&
+									selectedSku.isAvailable
+										? `Giá: ${selectedSku.finalPrice.toLocaleString()} đ`
+										: "Hết hàng"}
+								</h3>
+							)}
+						</div>
+
 						<div className="border rounded-lg p-4 mb-6">
 							<h2 className="text-lg font-bold mb-4">
 								Thông số kỹ thuật
@@ -125,6 +269,27 @@ export default function ProductDetails() {
 							</button>
 						</div>
 					</div>
+
+					{/* <div className="overflow-x-auto">
+						<div className="space-y-6">
+							<h1 className="text-2xl font-bold">
+								{product.name}
+							</h1>
+							<div className="aspect-square relative"></div>
+							<div className="text-center">
+								<span className="text-3xl font-bold text-red-600">
+									{product.price}
+								</span>
+							</div>
+							<p className="text-gray-700 text-sm">
+								{product.description}
+							</p>
+							<div className="flex gap-4"></div>
+						</div>
+						<div>
+							<div className="border rounded-lg p-4 mb-6"></div>
+						</div>
+					</div> */}
 				</div>
 			</div>
 		</div>

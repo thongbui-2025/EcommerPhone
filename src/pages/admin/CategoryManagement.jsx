@@ -34,6 +34,23 @@ const CategoryManagement = () => {
 			.catch((error) => console.error("Lỗi khi lấy dữ liệu:", error));
 	}, []);
 
+	const handleCreateCategory = (newCategory) => {
+		console.log(newCategory);
+		const token = localStorage.getItem("token");
+
+		axios
+			.post("/Brands", newCategory, {
+				headers: { Authorization: `Bearer ${token}` }, // Thêm token vào header
+			})
+			.then((response) => {
+				setCategories([...categories, response.data]);
+				setShowCreateForm(false);
+			})
+			.catch((error) =>
+				console.error("Lỗi khi tạo danh mục mới:", error)
+			);
+	};
+
 	const handleCategoryUpdate = (updatedCategory) => {
 		axios.put(`/Brands/${updatedCategory.id}`, updatedCategory).then(() => {
 			setCategories((prevCategories) =>
@@ -45,11 +62,6 @@ const CategoryManagement = () => {
 			);
 			setCategoryToUpdate(null);
 		});
-	};
-
-	const handleDeleteClick = (category) => {
-		setCategoryToDelete(category);
-		setShowDeleteConfirmation(true);
 	};
 
 	const handleConfirmDelete = () => {
@@ -67,23 +79,14 @@ const CategoryManagement = () => {
 			});
 	};
 
+	const handleDeleteClick = (category) => {
+		setCategoryToDelete(category);
+		setShowDeleteConfirmation(true);
+	};
+
 	const handleCancelDelete = () => {
 		setShowDeleteConfirmation(false);
 		setCategoryToDelete(null);
-	};
-
-	const handleCreateCategory = (newCategory) => {
-		console.log(newCategory);
-
-		axios
-			.post("/Brands", newCategory)
-			.then((response) => {
-				setCategories([...categories, response.data]);
-				setShowCreateForm(false);
-			})
-			.catch((error) =>
-				console.error("Lỗi khi tạo danh mục mới:", error)
-			);
 	};
 
 	if (showCreateForm) {

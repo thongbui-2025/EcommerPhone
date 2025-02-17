@@ -4,23 +4,54 @@ import { Link } from "react-router";
 
 export default function ShoppingCart() {
 	const [cartItems, setCartItems] = useState([
-		{
-			id: 1,
-			image: "https://cdn.tgdd.vn/Products/Images/42/213031/TimerThumb/iphone-12-(76).jpg",
-			name: "iPhone 12 Mini",
-			model: "Màu Xanh Navy 64GB",
-			price: 30000000,
-			quantity: 1,
-		},
-		{
-			id: 2,
-			image: "https://cdn.tgdd.vn/Products/Images/42/213031/TimerThumb/iphone-12-(76).jpg",
-			name: "iPhone 11 Pro Max",
-			model: "Màu Xanh Navy 164GB",
-			price: 20000000,
-			quantity: 1,
-		},
+		// {
+		// 	id: 1,
+		// 	image: "https://cdn.tgdd.vn/Products/Images/42/213031/TimerThumb/iphone-12-(76).jpg",
+		// 	name: "iPhone 12 Mini",
+		// 	model: "Màu Xanh Navy 64GB",
+		// 	price: 30000000,
+		// 	quantity: 1,
+		// },
+		// {
+		// 	id: 2,
+		// 	image: "https://cdn.tgdd.vn/Products/Images/42/213031/TimerThumb/iphone-12-(76).jpg",
+		// 	name: "iPhone 11 Pro Max",
+		// 	model: "Màu Xanh Navy 164GB",
+		// 	price: 20000000,
+		// 	quantity: 1,
+		// },
 	]);
+	const cartId = localStorage.getItem("cartId");
+	console.log(cartId);
+
+	// 	useEffect(() => {
+	// 		Promise.all([
+	// 			axios.get(`/Cart_Item?cartId=${cartId}`),
+	// 			axios.get("/Product_SKU/"),
+	// 			axios.get("/Product_Image/"),
+	// 		])
+	// 			.then(([cartItemRes, skusRes, imagesRes]) => {
+	// 				const cartItems = cartItemRes.data;
+	// 				const skus = skusRes.data;
+	// 				console.log(skus);
+	// 				const images = imagesRes.data;
+	// 				console.log(images);
+	//
+	// 				// Gộp dữ liệu dựa trên ProductId
+	// 				const mergedCarts = cartItems.map((cartItem) => ({
+	// 					...cartItem,
+	// 					skus: skus.filter(
+	// 						(sku) => sku.id === cartItem.product_SKUId
+	// 					),
+	// 					images: images.filter(
+	// 						(img) => img.productId === product.productId
+	// 					),
+	// 				}));
+	//
+	// 				setCartItems(mergedProducts);
+	// 			})
+	// 			.catch((error) => console.error("Lỗi khi lấy dữ liệu:", error));
+	// 	}, [cartId]);
 
 	const updateQuantity = (id, change) => {
 		setCartItems((items) =>

@@ -6,12 +6,18 @@ import { logoutUser } from "../utils/auth";
 
 const Header = () => {
 	const [brands, setBrands] = useState([]);
+	const [username, setUsername] = useState("");
 
 	useEffect(() => {
 		axios.get("Brands").then((response) => setBrands(response.data));
 	}, []);
 
-	const username = localStorage.getItem("username");
+	useEffect(() => {
+		const storedUsername = localStorage.getItem("username");
+		if (storedUsername) {
+			setUsername(storedUsername);
+		}
+	}, []);
 	// const userId = localStorage.getItem("userId");
 	// const cartId = localStorage.getItem("cartId");
 

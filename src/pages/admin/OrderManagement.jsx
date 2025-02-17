@@ -8,7 +8,7 @@ const ITEMS_PER_PAGE = 10;
 const OrderManagement = () => {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [selectedStatus, setSelectedStatus] = useState("all");
-	const [customers, setCustomers] = useState([]);
+	const [orders, setOrders] = useState([]);
 
 	useEffect(() => {
 		Promise.all([
@@ -74,15 +74,15 @@ const OrderManagement = () => {
 					orderItems: items,
 				};
 			});
-			setCustomers(ordersWithDetails);
+			setOrders(ordersWithDetails);
 		});
 	}, []);
 
-	console.log("customers", customers);
+	console.log("orders", orders);
 
 	// Logic pagination
 	const [currentPage, setCurrentPage] = useState(1);
-	const totalPages = Math.ceil(customers.length / ITEMS_PER_PAGE);
+	const totalPages = Math.ceil(orders.length / ITEMS_PER_PAGE);
 
 	const handlePageChange = (newPage) => {
 		if (newPage >= 1 && newPage <= totalPages) {
@@ -91,7 +91,7 @@ const OrderManagement = () => {
 	};
 
 	const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-	const displayedCustomers = customers.slice(
+	const displayedorders = orders.slice(
 		startIndex,
 		startIndex + ITEMS_PER_PAGE
 	);
@@ -139,8 +139,8 @@ const OrderManagement = () => {
 	};
 
 	// const handleApproveOrder = (id) => {
-	// 	setCustomers((prevCustomers) =>
-	// 		prevCustomers.map((customer) =>
+	// 	setOrders((prevorders) =>
+	// 		prevorders.map((customer) =>
 	// 			customer.id === id
 	// 				? { ...customer, status: "delivering" }
 	// 				: customer
@@ -149,8 +149,8 @@ const OrderManagement = () => {
 	// };
 
 	// const handleCancelOrder = (id) => {
-	// 	setCustomers((prevCustomers) =>
-	// 		prevCustomers.map((customer) =>
+	// 	setOrders((prevorders) =>
+	// 		prevorders.map((customer) =>
 	// 			customer.id === id
 	// 				? { ...customer, status: "cancelled" }
 	// 				: customer
@@ -159,7 +159,7 @@ const OrderManagement = () => {
 	// };
 
 	const handleViewOrder = (orderId) => {
-		const selectedCustomer = customers.find((c) => c.id === orderId);
+		const selectedCustomer = orders.find((c) => c.id === orderId);
 		console.log("selectedCustomer", selectedCustomer);
 		if (selectedCustomer) {
 			setSelectedOrder({
@@ -192,8 +192,8 @@ const OrderManagement = () => {
 			});
 		}
 
-		setCustomers((prevCustomers) =>
-			prevCustomers.map((customer) =>
+		setOrders((prevorders) =>
+			prevorders.map((customer) =>
 				customer.id === orderId
 					? { ...customer, status: newStatus }
 					: customer
@@ -250,7 +250,7 @@ const OrderManagement = () => {
 						</select>
 					</div>
 
-					{/* Customers Table */}
+					{/* orders Table */}
 					<div className="overflow-x-auto">
 						<table className="w-full border-collapse">
 							<thead>
@@ -282,7 +282,7 @@ const OrderManagement = () => {
 								</tr>
 							</thead>
 							<tbody>
-								{displayedCustomers
+								{displayedorders
 									.filter(
 										(customer) =>
 											selectedStatus === "all" ||

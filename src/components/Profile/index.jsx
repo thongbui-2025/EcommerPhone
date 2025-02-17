@@ -1,33 +1,57 @@
-"use client";
-
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
 	User,
 	Mail,
 	Phone,
-	Calendar,
+	// Calendar,
 	MapPin,
 	Lock,
 	Edit2,
 	Save,
 } from "lucide-react";
+import axios from "axios";
 
 const Profile = () => {
 	const [isEditing, setIsEditing] = useState(false);
 	const [showPasswordChange, setShowPasswordChange] = useState(false);
-	const [userInfo, setUserInfo] = useState({
-		username: "user123",
-		email: "user@example.com",
-		phone: "0123456789",
-		gender: "Nam",
-		birthdate: "1990-01-01",
-		address: "Hà Nội, Việt Nam",
-	});
+	const [userInfo, setUserInfo] = useState(null);
+	const [loading, setLoading] = useState(true);
 	const [password, setPassword] = useState({
 		current: "",
 		new: "",
 		confirm: "",
 	});
+
+	useEffect(() => {
+		const fetchUserInfo = async () => {
+			const userId = localStorage.getItem("userId");
+			const token = localStorage.getItem("token");
+			try {
+				const repsponse = await axios.get(
+					`Auth/profile?userId=${userId}`,
+					{
+						headers: { Authorization: `Bearer ${token}` },
+					}
+				);
+				setUserInfo(repsponse.data);
+			} catch (error) {
+				console.error("Lỗi khi lấy thông tin người dùng:", error);
+			} finally {
+				setLoading(false);
+			}
+		};
+		fetchUserInfo();
+	}, []);
+
+	if (loading) {
+		return (
+			<div className="flex justify-center items-center h-screen">
+				<div className="animate-spin rounded-full h-16 w-16 border-t-4 border-[#52cceb]"></div>
+			</div>
+		);
+	}
+
+	// console.log(userInfo);
 
 	const handleInfoChange = (e) => {
 		setUserInfo({ ...userInfo, [e.target.name]: e.target.value });
@@ -37,11 +61,15 @@ const Profile = () => {
 		setPassword({ ...password, [e.target.name]: e.target.value });
 	};
 
-	const handleSubmit = (e) => {
+	const handleSubmit = async (e) => {
 		e.preventDefault();
-		// Here you would typically send the updated info to your backend
-		console.log("Updated user info:", userInfo);
-		console.log("New password:", password.new);
+		try {
+			// const token = localStorage.getItem("token");
+			await axios.put(`/Auth/${userInfo.id}`, userInfo);
+		} catch (error) {
+			console.error("Lỗi khi cập nhật thông tin người dùng:", error);
+		}
+		// console.log("New password:", password.new);
 		setIsEditing(false);
 		setShowPasswordChange(false);
 	};
@@ -56,8 +84,8 @@ const Profile = () => {
 						<label className="w-32">Tên đăng nhập:</label>
 						<input
 							type="text"
-							name="username"
-							value={userInfo.username}
+							name="userName"
+							value={userInfo?.userName}
 							onChange={handleInfoChange}
 							disabled={!isEditing}
 							className="flex-1 p-2 border rounded"
@@ -69,7 +97,7 @@ const Profile = () => {
 						<input
 							type="email"
 							name="email"
-							value={userInfo.email}
+							value={userInfo?.email}
 							onChange={handleInfoChange}
 							disabled={!isEditing}
 							className="flex-1 p-2 border rounded"
@@ -80,14 +108,14 @@ const Profile = () => {
 						<label className="w-32">Số điện thoại:</label>
 						<input
 							type="tel"
-							name="phone"
-							value={userInfo.phone}
+							name="phoneNumber"
+							value={userInfo?.phoneNumber}
 							onChange={handleInfoChange}
 							disabled={!isEditing}
 							className="flex-1 p-2 border rounded"
 						/>
 					</div>
-					<div className="flex items-center">
+					{/* <div className="flex items-center">
 						<User className="w-6 h-6 mr-2" />
 						<label className="w-32">Giới tính:</label>
 						<select
@@ -101,8 +129,8 @@ const Profile = () => {
 							<option value="Nữ">Nữ</option>
 							<option value="Khác">Khác</option>
 						</select>
-					</div>
-					<div className="flex items-center">
+					</div> */}
+					{/* <div className="flex items-center">
 						<Calendar className="w-6 h-6 mr-2" />
 						<label className="w-32">Ngày sinh:</label>
 						<input
@@ -113,14 +141,14 @@ const Profile = () => {
 							disabled={!isEditing}
 							className="flex-1 p-2 border rounded"
 						/>
-					</div>
+					</div> */}
 					<div className="flex items-center">
 						<MapPin className="w-6 h-6 mr-2" />
 						<label className="w-32">Địa chỉ:</label>
 						<input
 							type="text"
 							name="address"
-							value={userInfo.address}
+							value={userInfo?.address}
 							onChange={handleInfoChange}
 							disabled={!isEditing}
 							className="flex-1 p-2 border rounded"
