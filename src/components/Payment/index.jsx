@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Edit2 } from "lucide-react";
 import VnPay from "./VnPay";
+import { formatPrice } from "../../utils/formatPrice";
 // import { useParams } from "react-router";
 
 const Payment = () => {
@@ -31,10 +32,6 @@ const Payment = () => {
 		(sum, product) => sum + product.price * product.quantity,
 		0
 	);
-
-	const formatPrice = (price) => {
-		return new Intl.NumberFormat("vi-VN").format(price) + " đ";
-	};
 
 	return (
 		<div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md">

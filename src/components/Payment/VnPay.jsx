@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { CheckCircle, Copy, X } from "lucide-react";
+import { formatPrice } from "../../utils/formatPrice";
 
 const VnPay = ({ totalAmount, onClose }) => {
 	const [paymentStatus, setPaymentStatus] = useState("pending");
@@ -26,10 +27,6 @@ const VnPay = ({ totalAmount, onClose }) => {
 			setPaymentStatus("expired");
 		}
 	}, [countdown]);
-
-	const formatPrice = (price) => {
-		return new Intl.NumberFormat("vi-VN").format(price) + " đ";
-	};
 
 	const formatTime = (seconds) => {
 		const minutes = Math.floor(seconds / 60);

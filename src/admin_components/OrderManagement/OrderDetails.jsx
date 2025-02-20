@@ -6,12 +6,9 @@ import {
 	XCircle,
 	Clock,
 } from "lucide-react";
+import { formatPrice } from "../../utils/formatPrice";
 
 const OrderDetails = ({ order, onBack, onUpdateStatus }) => {
-	const formatPrice = (price) => {
-		return new Intl.NumberFormat("vi-VN").format(price) + " đ";
-	};
-
 	console.log("Order", order);
 
 	const getStatusText = (status) => {

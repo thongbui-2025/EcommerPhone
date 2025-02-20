@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Search, ShoppingCart, ChevronDown } from "lucide-react";
 import { Link, useParams } from "react-router";
 import axios from "axios";
+import { formatPrice } from "../../utils/formatPrice";
 
 const priceRanges = [
 	{ id: "all", label: "Tất cả" },
@@ -83,10 +84,6 @@ export default function MediaPhoneList() {
 	}, [brand]);
 
 	console.log(allProducts);
-
-	const formatPrice = (price) => {
-		return new Intl.NumberFormat("vi-VN").format(price) + " đ";
-	};
 
 	const filterProducts = (products) => {
 		if (selectedPriceRange === "all") return products;

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Minus, Plus, X, ChevronLeft } from "lucide-react";
 import { Link } from "react-router";
+import { formatPrice } from "../../utils/formatPrice";
 
 export default function ShoppingCart() {
 	const [cartItems, setCartItems] = useState([
@@ -65,10 +66,6 @@ export default function ShoppingCart() {
 
 	const removeItem = (id) => {
 		setCartItems((items) => items.filter((item) => item.id !== id));
-	};
-
-	const formatPrice = (price) => {
-		return new Intl.NumberFormat("vi-VN").format(price) + " đ";
 	};
 
 	const total = cartItems.reduce(

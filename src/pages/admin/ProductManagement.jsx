@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
-import { Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import axios from "axios";
 import UpdateProduct from "../../admin_components/ProductManagement/UpdateProduct";
 import ProductDetails from "../../admin_components/ProductManagement/ProductDetails";
 import CreateProduct from "../../admin_components/ProductManagement/CreateProduct";
-import axios from "axios";
+import { formatPrice } from "../../utils/formatPrice";
+import CreateProductSku_Image from "../../admin_components/ProductManagement/CreateProductSKU_Image";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -11,6 +13,7 @@ const ProductManagement = () => {
 	const [searchQuery, setSearchQuery] = useState("");
 	// const [selectedCategory, setSelectedCategory] = useState("all");
 	const [showCreateForm, setShowCreateForm] = useState(false);
+	const [showCreateSkuImageForm, setShowCreateSkuImageForm] = useState(false);
 	const [selectedProduct, setSelectedProduct] = useState(null);
 	const [productToUpdate, setProductToUpdate] = useState(null);
 	const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
@@ -33,14 +36,19 @@ const ProductManagement = () => {
 					return acc;
 				}, {});
 
+				const skuMap = skus.reduce((acc, sku) => {
+					if (!acc[sku.productId]) {
+						acc[sku.productId] = []; // Nếu chưa có key này, tạo một mảng rỗng
+					}
+					acc[sku.productId].push(sku); // Thêm đối tượng SKU vào mảng
+					return acc;
+				}, {});
+
 				// Gộp dữ liệu dựa trên ProductId
 				const mergedProducts = products.map((product) => ({
 					...product,
-					// images: images.filter(
-					// 	(img) => img.ProductId === product.Id
-					// ),
 					images: imageMap[product.id] || {},
-					skus: skus.filter((sku) => sku.ProductId === product.Id),
+					skus: skuMap[product.id] || {},
 				}));
 
 				setProducts(mergedProducts);
@@ -66,8 +74,115 @@ const ProductManagement = () => {
 		startIndex + ITEMS_PER_PAGE
 	);
 
-	const formatPrice = (price) => {
-		return new Intl.NumberFormat("vi-VN").format(price);
+	const handleCreateProduct = async ({ productData }) => {
+		console.log("Product Data:", productData);
+
+		const token = localStorage.getItem("token");
+		if (!token) {
+			alert("Bạn chưa đăng nhập!");
+			return;
+		}
+
+		try {
+			// Tạo sản phẩm
+			axios
+				.post("/Products", productData, {
+					headers: { Authorization: `Bearer ${token}` },
+				})
+				.then((response) => {
+					setProducts([...products, response.data]);
+					setShowCreateForm(false);
+				})
+				.catch((error) =>
+					console.error("Lỗi khi tạo sản phẩm mới:", error)
+				);
+
+			// alert("Sản phẩm đã được tạo thành công!");
+		} catch (error) {
+			console.error(error);
+			// alert(error.response?.data?.message || "Có lỗi xảy ra!");
+		}
+	};
+
+	const handleCreateProductSku_Image = ({ skuData, imageData }) => {
+		console.log("SKU Data:", skuData);
+		console.log("Image Data:", imageData);
+
+		const token = localStorage.getItem("token");
+		if (!token) {
+			alert("Bạn chưa đăng nhập!");
+			return;
+		}
+		// Tạo SKU cho sản phẩm
+		axios
+			.post("/Product_SKU", skuData, {
+				headers: { Authorization: `Bearer ${token}` },
+			})
+			.then((response) => {
+				console.log("Sku", response.data);
+
+				const Sku = response.data;
+
+				// Merge dữ liệu sản phẩm
+				const mergedProducts = products.map((product) => {
+					if (product.id === Sku.productId) {
+						return {
+							...product,
+							skus: Sku,
+						};
+					}
+					return product;
+				});
+				setProducts(mergedProducts);
+				setShowCreateSkuImageForm(false);
+			})
+			.catch((error) =>
+				console.error("Lỗi khi tạo sản phẩm mới:", error)
+			);
+
+		// Upload hình ảnh
+		const formData = new FormData();
+		formData.append("images", imageData.productImages[0]); // Kiểm tra key ảnh đúng chưa
+
+		// Kiểm tra dữ liệu trước khi gửi
+		for (let pair of formData.entries()) {
+			console.log(pair[0], pair[1]);
+		}
+
+		const productId = skuData.productId;
+		console.log("productId", productId);
+
+		axios
+			.post(`/Product_Image?productId=${productId}`, formData, {
+				headers: {
+					Authorization: `Bearer ${token}`,
+					"Content-Type": "multipart/form-data",
+				},
+			})
+			.then((response) => {
+				console.log("Images:", response.data);
+				// Tạo object ảnh đầy đủ dựa trên response và productId đã biết
+				const newImage = {
+					id: Date.now(), // Hoặc lấy từ response nếu có
+					productId: productId,
+					product: null,
+					imageName: response.data,
+					isMain: false,
+					createdAt: new Date().toISOString(),
+				};
+
+				const mergedProducts = products.map((product) =>
+					product.id === newImage.productId
+						? { ...product, images: newImage }
+						: product
+				);
+
+				setProducts(mergedProducts);
+				setShowCreateSkuImageForm(false);
+			})
+			.catch((error) =>
+				console.error("Lỗi khi tạo Sku và Image:", error)
+			);
 	};
 
 	const handleProductUpdate = (updatedProduct) => {
@@ -100,16 +215,33 @@ const ProductManagement = () => {
 	};
 
 	if (showCreateForm) {
-		return <CreateProduct onBack={() => setShowCreateForm(false)} />;
+		return (
+			<CreateProduct
+				onBack={() => setShowCreateForm(false)}
+				onCreate={handleCreateProduct}
+			/>
+		);
+	}
+
+	if (showCreateSkuImageForm) {
+		return (
+			<CreateProductSku_Image
+				onBack={() => setShowCreateSkuImageForm(false)}
+				onCreate={handleCreateProductSku_Image}
+			/>
+		);
 	}
 
 	if (selectedProduct) {
-		return (
-			<ProductDetails
-				product={selectedProduct}
-				onBack={() => setSelectedProduct(null)}
-			/>
-		);
+		if (Object.keys(selectedProduct.skus).length !== 0) {
+			// Kiểm trac có tạo sku cho sản phẩm chưa
+			return (
+				<ProductDetails
+					product={selectedProduct}
+					onBack={() => setSelectedProduct(null)}
+				/>
+			);
+		}
 	}
 
 	if (productToUpdate) {
@@ -139,7 +271,7 @@ const ProductManagement = () => {
 								onClick={() => setShowCreateForm(true)}
 								className="bg-emerald-500 text-white px-4 py-2 rounded hover:bg-emerald-600"
 							>
-								Tạo mới
+								Tạo sản phẩm
 							</button>
 
 							<div className="flex-1 flex items-center">
@@ -152,26 +284,13 @@ const ProductManagement = () => {
 									}
 									className="flex-1 p-2 border rounded mr-1"
 								/>
-								<button className="bg-blue-500 text-white p-3 rounded">
-									<Search className="w-5 h-5" />
-								</button>
 							</div>
-
-							{/* <select
-								value={selectedCategory}
-								onChange={(e) =>
-									setSelectedCategory(e.target.value)
-								}
-								className="p-2 border rounded"
+							<button
+								onClick={() => setShowCreateSkuImageForm(true)}
+								className="bg-emerald-500 text-white px-4 py-2 rounded hover:bg-emerald-600"
 							>
-								<option value="all">Chọn danh mục</option>
-								<option value="phones">Điện thoại</option>
-								<option value="tablets">Máy tính bảng</option>
-							</select>
-
-							<button className="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-700">
-								Đặt lại
-							</button> */}
+								Tạo Sku và Image cho sản phẩm
+							</button>
 						</div>
 
 						{/* Products Table */}
@@ -212,8 +331,8 @@ const ProductManagement = () => {
 												<img
 													src={
 														"https://localhost:7011/uploads/" +
-															product.images
-																.imageName ||
+															product?.images
+																?.imageName ||
 														"/placeholder.svg"
 													}
 													alt={product.name}
@@ -225,8 +344,8 @@ const ProductManagement = () => {
 											</td>
 											<td className="border p-3">
 												{formatPrice(
-													product.skus[0]
-														?.defaultPrice
+													product?.skus[0]
+														?.defaultPrice || 0
 												)}
 											</td>
 											<td className="border p-3">

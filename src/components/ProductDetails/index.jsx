@@ -50,7 +50,7 @@ export default function ProductDetails() {
 			.catch((error) => console.error("Error fetching data:", error));
 	}, [id]);
 
-	// console.log(product);
+	console.log(product);
 
 	const specifications = [
 		{ label: "Màn hình:", value: product?.display },

@@ -105,8 +105,13 @@ const CustomerManagement = () => {
 		}
 	};
 
+	// Lọc theo searchQuery
+	const filteredCustomers = customers.filter((customer) =>
+		customer?.userName.toLowerCase().includes(searchQuery.toLowerCase())
+	);
+
 	const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-	const displayedCustomers = customers.slice(
+	const displayedCustomers = filteredCustomers.slice(
 		startIndex,
 		startIndex + ITEMS_PER_PAGE
 	);

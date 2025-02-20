@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Search, ChevronLeft, ChevronRight, Eye } from "lucide-react";
 import OrderDetails from "../../admin_components/OrderManagement/OrderDetails";
 import axios from "axios";
+import { formatPrice } from "../../utils/formatPrice";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -91,8 +92,17 @@ const OrderManagement = () => {
 		}
 	};
 
+	// Lọc theo searchQuery
+	const filteredOrders = orders.filter(
+		(order) =>
+			order.receiverName
+				.toLowerCase()
+				.includes(searchQuery.toLowerCase()) &&
+			(selectedStatus === "all" || order.status === selectedStatus)
+	);
+
 	const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-	const displayedorders = orders.slice(
+	const displayedorders = filteredOrders.slice(
 		startIndex,
 		startIndex + ITEMS_PER_PAGE
 	);
@@ -101,10 +111,6 @@ const OrderManagement = () => {
 	const formatDate = (dateString) => {
 		const options = { year: "numeric", month: "2-digit", day: "2-digit" };
 		return new Date(dateString).toLocaleDateString("vi-VN", options);
-	};
-
-	const formatPrice = (price) => {
-		return new Intl.NumberFormat("vi-VN").format(price);
 	};
 
 	const getStatusText = (status) => {

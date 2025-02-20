@@ -1,6 +1,7 @@
 import axios from "axios";
 import { Store, HelpCircle } from "lucide-react";
 import { useEffect, useState } from "react";
+import { formatPrice } from "../../utils/formatPrice";
 
 const PurchaseHistory = () => {
 	const [orderDetail, setOrderDetails] = useState(null);
@@ -75,10 +76,6 @@ const PurchaseHistory = () => {
 	}, [userId]);
 
 	console.log("orderDetail", orderDetail);
-
-	const formatPrice = (price) => {
-		return new Intl.NumberFormat("vi-VN").format(price) + "đ";
-	};
 
 	return (
 		<div className="max-w-7xl mx-auto space-y-4 mt-3">
