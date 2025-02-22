@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import ProductManagement from "./ProductManagement";
-import CategoryManagement from "./CategoryManagement";
-import OrderManagement from "./OrderManagement";
-import CustomerManagement from "./CustomerManagement";
+// import ProductManagement from "./ProductManagement";
+// import CategoryManagement from "./CategoryManagement";
+// import OrderManagement from "./OrderManagement";
+// import CustomerManagement from "./CustomerManagement";
 import { isAdmin } from "../../utils/auth";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 
 export default function AdminPage() {
 	const navigate = useNavigate();
@@ -26,7 +26,7 @@ export default function AdminPage() {
 	}
 
 	return (
-		<div className="min-h-screen bg-gray-100">
+		<div className="bg-gray-100">
 			<nav className="bg-white shadow-sm">
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="flex justify-between h-16">
@@ -37,7 +37,8 @@ export default function AdminPage() {
 								</span>
 							</div>
 							<div className="hidden sm:-my-px sm:ml-6 sm:flex sm:space-x-8">
-								<button
+								<Link
+									to={"/productManagement"}
 									onClick={() => setActiveTab("products")}
 									className={`${
 										activeTab === "products"
@@ -46,8 +47,9 @@ export default function AdminPage() {
 									} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
 								>
 									Products
-								</button>
-								<button
+								</Link>
+								<Link
+									to={"/categoryManagement"}
 									onClick={() => setActiveTab("categories")}
 									className={`${
 										activeTab === "categories"
@@ -56,8 +58,9 @@ export default function AdminPage() {
 									} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
 								>
 									Categories
-								</button>
-								<button
+								</Link>
+								<Link
+									to={"/orderManagement"}
 									onClick={() => setActiveTab("order")}
 									className={`${
 										activeTab === "order"
@@ -66,8 +69,9 @@ export default function AdminPage() {
 									} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
 								>
 									Order
-								</button>
-								<button
+								</Link>
+								<Link
+									to={"/customerManagement"}
 									onClick={() => setActiveTab("customer")}
 									className={`${
 										activeTab === "customer"
@@ -76,18 +80,18 @@ export default function AdminPage() {
 									} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
 								>
 									Customer
-								</button>
+								</Link>
 							</div>
 						</div>
 					</div>
 				</div>
 			</nav>
-			<main>
+			{/* <main>
 				{activeTab === "products" && <ProductManagement />}
 				{activeTab === "categories" && <CategoryManagement />}
 				{activeTab === "order" && <OrderManagement />}
 				{activeTab === "customer" && <CustomerManagement />}
-			</main>
+			</main> */}
 		</div>
 	);
 }

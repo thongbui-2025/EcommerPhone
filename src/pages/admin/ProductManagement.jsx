@@ -45,7 +45,7 @@ const ProductManagement = () => {
 				}, {});
 
 				// Gộp dữ liệu dựa trên ProductId
-				const mergedProducts = products.map((product) => ({
+				const mergedProducts = products?.map((product) => ({
 					...product,
 					images: imageMap[product.id] || {},
 					skus: skuMap[product.id] || {},
@@ -74,38 +74,8 @@ const ProductManagement = () => {
 		startIndex + ITEMS_PER_PAGE
 	);
 
-	const handleCreateProduct = async ({ productData }) => {
+	const handleCreateProduct_Image = async ({ productData, imageData }) => {
 		console.log("Product Data:", productData);
-
-		const token = localStorage.getItem("token");
-		if (!token) {
-			alert("Bạn chưa đăng nhập!");
-			return;
-		}
-
-		try {
-			// Tạo sản phẩm
-			axios
-				.post("/Products", productData, {
-					headers: { Authorization: `Bearer ${token}` },
-				})
-				.then((response) => {
-					setProducts([...products, response.data]);
-					setShowCreateForm(false);
-				})
-				.catch((error) =>
-					console.error("Lỗi khi tạo sản phẩm mới:", error)
-				);
-
-			// alert("Sản phẩm đã được tạo thành công!");
-		} catch (error) {
-			console.error(error);
-			// alert(error.response?.data?.message || "Có lỗi xảy ra!");
-		}
-	};
-
-	const handleCreateProductSku_Image = ({ skuData, imageData }) => {
-		console.log("SKU Data:", skuData);
 		console.log("Image Data:", imageData);
 
 		const token = localStorage.getItem("token");
@@ -113,32 +83,24 @@ const ProductManagement = () => {
 			alert("Bạn chưa đăng nhập!");
 			return;
 		}
-		// Tạo SKU cho sản phẩm
-		axios
-			.post("/Product_SKU", skuData, {
+
+		let newProduct;
+
+		try {
+			const responseProduct = await axios.post("/Products", productData, {
 				headers: { Authorization: `Bearer ${token}` },
-			})
-			.then((response) => {
-				console.log("Sku", response.data);
+			});
+			console.log("responseProduct", responseProduct);
 
-				const Sku = response.data;
+			newProduct = responseProduct.data; // Gán giá trị cho biến toàn cục
+			setProducts((prevProducts) => [...prevProducts, newProduct]);
+			// setShowCreateForm(false);
 
-				// Merge dữ liệu sản phẩm
-				const mergedProducts = products.map((product) => {
-					if (product.id === Sku.productId) {
-						return {
-							...product,
-							skus: Sku,
-						};
-					}
-					return product;
-				});
-				setProducts(mergedProducts);
-				setShowCreateSkuImageForm(false);
-			})
-			.catch((error) =>
-				console.error("Lỗi khi tạo sản phẩm mới:", error)
-			);
+			// alert("Sản phẩm đã được tạo thành công!");
+		} catch (error) {
+			console.error(error);
+			// alert(error.response?.data?.message || "Có lỗi xảy ra!");
+		}
 
 		// Upload hình ảnh
 		const formData = new FormData();
@@ -149,45 +111,101 @@ const ProductManagement = () => {
 			console.log(pair[0], pair[1]);
 		}
 
-		const productId = skuData.productId;
+		console.log("newProduct", newProduct);
+
+		const productId = newProduct.id;
 		console.log("productId", productId);
 
+		try {
+			const responseProduct_Image = await axios.post(
+				`/Product_Image?productId=${productId}`,
+				formData,
+				{
+					headers: {
+						Authorization: `Bearer ${token}`,
+						"Content-Type": "multipart/form-data",
+					},
+				}
+			);
+
+			console.log("Images:", responseProduct_Image.data);
+			// Tạo object ảnh đầy đủ dựa trên response và productId đã biết
+			const newImage = {
+				id: Date.now(), // Hoặc lấy từ response nếu có
+				productId: productId,
+				product: null,
+				imageName: responseProduct_Image.data[0],
+				isMain: false,
+				createdAt: new Date().toISOString(),
+			};
+
+			// Cập nhật ảnh vào sản phẩm
+			setProducts((prevProducts) =>
+				prevProducts?.map((product) =>
+					product.id === newImage.productId
+						? {
+								...product,
+								images: newImage,
+						  }
+						: product
+				)
+			);
+			// const mergedProducts = products.map((product) =>
+			// 	product.id === newImage.productId
+			// 		? { ...product, images: newImage }
+			// 		: product
+			// );
+
+			setShowCreateForm(false);
+		} catch (error) {
+			console.error(error);
+		}
+	};
+
+	const handleCreateProductSku = (skuData) => {
+		console.log("SKU Data:", skuData);
+		// Xử lý post theo FormData cho skuData
+		const token = localStorage.getItem("token");
+		if (!token) {
+			alert("Bạn chưa đăng nhập!");
+			return;
+		}
+		// Tạo SKU cho sản phẩm
 		axios
-			.post(`/Product_Image?productId=${productId}`, formData, {
+			.post(`/Product_SKU`, skuData, {
 				headers: {
 					Authorization: `Bearer ${token}`,
 					"Content-Type": "multipart/form-data",
 				},
 			})
 			.then((response) => {
-				console.log("Images:", response.data);
-				// Tạo object ảnh đầy đủ dựa trên response và productId đã biết
-				const newImage = {
-					id: Date.now(), // Hoặc lấy từ response nếu có
-					productId: productId,
-					product: null,
-					imageName: response.data,
-					isMain: false,
-					createdAt: new Date().toISOString(),
-				};
+				console.log("Sku", response.data);
 
-				const mergedProducts = products.map((product) =>
-					product.id === newImage.productId
-						? { ...product, images: newImage }
-						: product
-				);
+				const Sku = response.data;
 
+				// Merge dữ liệu sản phẩm
+				const mergedProducts = products?.map((product) => {
+					if (product.id === Sku.productId) {
+						return {
+							...product,
+							skus: Array.isArray(product.skus) // Nếu chưa có skus nào thì tạo mảng mới vì ban đầu là {}
+								? [...(product.skus || []), Sku] // Thêm SKU vào mảng hiện tại
+								: [Sku],
+						};
+					}
+					return product;
+				});
 				setProducts(mergedProducts);
 				setShowCreateSkuImageForm(false);
 			})
 			.catch((error) =>
-				console.error("Lỗi khi tạo Sku và Image:", error)
+				console.error("Lỗi khi tạo sản phẩm mới:", error)
 			);
 	};
 
 	const handleProductUpdate = (updatedProduct) => {
 		setProducts((prevProducts) =>
-			prevProducts.map((product) =>
+			prevProducts?.map((product) =>
 				product.id === updatedProduct.id
 					? { ...product, ...updatedProduct }
 					: product
@@ -218,7 +236,7 @@ const ProductManagement = () => {
 		return (
 			<CreateProduct
 				onBack={() => setShowCreateForm(false)}
-				onCreate={handleCreateProduct}
+				onCreate={handleCreateProduct_Image}
 			/>
 		);
 	}
@@ -227,7 +245,7 @@ const ProductManagement = () => {
 		return (
 			<CreateProductSku_Image
 				onBack={() => setShowCreateSkuImageForm(false)}
-				onCreate={handleCreateProductSku_Image}
+				onCreate={handleCreateProductSku}
 			/>
 		);
 	}
@@ -271,7 +289,7 @@ const ProductManagement = () => {
 								onClick={() => setShowCreateForm(true)}
 								className="bg-emerald-500 text-white px-4 py-2 rounded hover:bg-emerald-600"
 							>
-								Tạo sản phẩm
+								Tạo sản phẩm và Image
 							</button>
 
 							<div className="flex-1 flex items-center">
@@ -289,7 +307,7 @@ const ProductManagement = () => {
 								onClick={() => setShowCreateSkuImageForm(true)}
 								className="bg-emerald-500 text-white px-4 py-2 rounded hover:bg-emerald-600"
 							>
-								Tạo Sku và Image cho sản phẩm
+								Tạo Sku cho sản phẩm
 							</button>
 						</div>
 
@@ -319,76 +337,78 @@ const ProductManagement = () => {
 									</tr>
 								</thead>
 								<tbody>
-									{displayedProducts.map((product, index) => (
-										<tr
-											key={product.id}
-											className="hover:bg-gray-50"
-										>
-											<td className="border p-3">
-												{startIndex + index + 1}
-											</td>
-											<td className="border p-3">
-												<img
-													src={
-														"https://localhost:7011/uploads/" +
-															product?.images
-																?.imageName ||
-														"/placeholder.svg"
-													}
-													alt={product.name}
-													className="w-16 h-16 object-cover rounded"
-												/>
-											</td>
-											<td className="border p-3">
-												{product.name}
-											</td>
-											<td className="border p-3">
-												{formatPrice(
-													product?.skus[0]
-														?.defaultPrice || 0
-												)}
-											</td>
-											<td className="border p-3">
-												{product.quality}
-											</td>
-											<td className="border p-3">
-												<div className="space-x-2">
-													<button
-														className="text-blue-500 hover:underline"
-														onClick={() =>
-															setSelectedProduct(
-																product
-															)
+									{displayedProducts?.map(
+										(product, index) => (
+											<tr
+												key={product.id}
+												className="hover:bg-gray-50"
+											>
+												<td className="border p-3">
+													{startIndex + index + 1}
+												</td>
+												<td className="border p-3">
+													<img
+														src={
+															`https://localhost:7011/uploads/${product.id}/` +
+																product?.images
+																	?.imageName ||
+															"/placeholder.svg"
 														}
-													>
-														Xem
-													</button>
-													<span>|</span>
-													<button
-														className="text-blue-500 hover:underline"
-														onClick={() =>
-															setProductToUpdate(
-																product
-															)
-														}
-													>
-														Cập nhật
-													</button>
-													<span>|</span>
-													<button
-														className="text-red-500 hover:underline"
-														onClick={() =>
-															handleDeleteClick(
-																product
-															)
-														}
-													>
-														Xóa
-													</button>
-												</div>
-											</td>
-										</tr>
-									))}
+														alt={product.name}
+														className="w-16 h-16 object-cover rounded"
+													/>
+												</td>
+												<td className="border p-3">
+													{product.name}
+												</td>
+												<td className="border p-3">
+													{formatPrice(
+														product?.skus?.[0]
+															?.defaultPrice ?? 0
+													)}
+												</td>
+												<td className="border p-3">
+													{product.quality}
+												</td>
+												<td className="border p-3">
+													<div className="space-x-2">
+														<button
+															className="text-blue-500 hover:underline"
+															onClick={() =>
+																setSelectedProduct(
+																	product
+																)
+															}
+														>
+															Xem
+														</button>
+														<span>|</span>
+														<button
+															className="text-blue-500 hover:underline"
+															onClick={() =>
+																setProductToUpdate(
+																	product
+																)
+															}
+														>
+															Cập nhật
+														</button>
+														<span>|</span>
+														<button
+															className="text-red-500 hover:underline"
+															onClick={() =>
+																handleDeleteClick(
+																	product
+																)
+															}
+														>
+															Xóa
+														</button>
+													</div>
+												</td>
+											</tr>
+										)
+									)}
 								</tbody>
 							</table>
 						</div>
@@ -404,7 +424,7 @@ const ProductManagement = () => {
 							>
 								<ChevronLeft className="w-4 h-4" />
 							</button>
-							{[...Array(totalPages)].map((_, index) => (
+							{[...Array(totalPages)]?.map((_, index) => (
 								<button
 									key={index}
 									className={`p-2 border rounded ${

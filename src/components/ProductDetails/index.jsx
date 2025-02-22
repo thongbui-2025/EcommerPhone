@@ -113,7 +113,7 @@ export default function ProductDetails() {
 						<div className="aspect-square relative">
 							<img
 								src={
-									"https://localhost:7011/uploads/" +
+									`https://localhost:7011/uploads/${product.id}/` +
 									product?.images?.[0]?.imageName
 								}
 								// src="https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/d/i/dien-thoai-xiaomi-redmi-note-14_2__2.png"

@@ -35,7 +35,7 @@ const LoginPage = () => {
 				localStorage.setItem("token", response.data.token);
 				localStorage.setItem("role", "admin");
 
-				navigate("/admin"); // Chuyển hướng đến trang admin
+				navigate("/productManagement"); // Chuyển hướng đến trang admin
 			} else {
 				setError("Đăng nhập thất bại, vui lòng thử lại.");
 			}

@@ -2,8 +2,8 @@ import { SearchCode, ShoppingCart } from "lucide-react";
 import { Link } from "react-router";
 
 const ProductCard = ({ id, images, name, skus }) => {
-	console.log(images.imageName);
-	console.log(skus);
+	// console.log(images.imageName);
+	// console.log(skus);
 
 	return (
 		<div className="mx-2 rounded-lg bg-white p-4 shadow-md">
@@ -11,8 +11,8 @@ const ProductCard = ({ id, images, name, skus }) => {
 				<div className="w-[18vw] md:h-[45vh] h-[35vh] rounded-lg overflow-hidden">
 					<img
 						src={
-							"https://localhost:7011/uploads/" +
-								images.imageName || "/placeholder.svg"
+							`https://localhost:7011/uploads/${id}/` +
+								images?.imageName || "/placeholder.svg"
 						}
 						alt={name}
 						className="w-[18vw] md:h-[45vh] h-[35vh] rounded-lg object-contain"

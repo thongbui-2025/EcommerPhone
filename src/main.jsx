@@ -14,11 +14,14 @@ import PurchaseHistory from "./components/PurchaseHistory";
 import UserLayout from "./layout/UserLayOut.jsx";
 import AdminLayout from "./layout/AdminLayout.jsx";
 import Payment from "./components/Payment/index.jsx";
-import AdminPage from "./pages/admin/AdminPage.jsx";
 import LoginPage from "./pages/admin/LoginPage.jsx";
 import axios from "axios";
 import SendMail from "./utils/sendMail.jsx";
 import SearchPhone from "./components/SearchPhone/index.jsx";
+import ProductManagement from "./pages/admin/ProductManagement.jsx";
+import CategoryManagement from "./pages/admin/CategoryManagement.jsx";
+import CustomerManagement from "./pages/admin/CustomerManagement.jsx";
+import OrderManagement from "./pages/admin/OrderManagement.jsx";
 
 axios.defaults.baseURL = "https://localhost:7011/api/";
 
@@ -69,7 +72,23 @@ const router = createBrowserRouter([
 		children: [
 			{
 				path: "/admin",
-				element: <AdminPage />,
+				// element: <AdminPage />,
+			},
+			{
+				path: "/productManagement",
+				element: <ProductManagement />,
+			},
+			{
+				path: "/categoryManagement",
+				element: <CategoryManagement />,
+			},
+			{
+				path: "/orderManagement",
+				element: <OrderManagement />,
+			},
+			{
+				path: "/customerManagement",
+				element: <CustomerManagement />,
 			},
 		],
 	},

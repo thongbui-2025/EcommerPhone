@@ -1,5 +1,5 @@
 import Slider from "react-slick";
-import { ChevronRight, ChevronLeft } from "lucide-react";
+import { ChevronRight, ChevronLeft, ChevronDown } from "lucide-react";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import ProductCard from "../../components/ProductCard";
@@ -37,6 +37,7 @@ export default function Homepage() {
 	};
 
 	const [products, setProducts] = useState([]);
+	const [showAll, setShowAll] = useState(false);
 
 	useEffect(() => {
 		Promise.all([
@@ -71,6 +72,11 @@ export default function Homepage() {
 
 	console.log(products);
 
+	const displayedProducts = showAll ? products : products.slice(0, 8);
+
+	console.log(displayedProducts);
+	console.log(displayedProducts.length);
+
 	return (
 		<div className="container mx-auto px-4 py-8">
 			{/* Banner Slider */}
@@ -103,10 +109,21 @@ export default function Homepage() {
 				</div>
 
 				<div className="grid grid-cols-4 gap-3">
-					{products.map((product, index) => (
+					{displayedProducts.map((product, index) => (
 						<ProductCard key={index} {...product} />
 					))}
 				</div>
+				{products.length > 8 && !showAll && (
+					<div className="text-center mt-8">
+						<button
+							onClick={() => setShowAll(true)}
+							className="inline-flex items-center gap-2 px-4 py-2 border rounded-md hover:bg-gray-50 cursor-pointer"
+						>
+							Xem thêm
+							<ChevronDown className="w-4 h-4" />
+						</button>
+					</div>
+				)}
 			</div>
 		</div>
 	);

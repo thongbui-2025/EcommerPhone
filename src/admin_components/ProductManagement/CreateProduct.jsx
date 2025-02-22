@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Upload } from "lucide-react";
 
 const CreateProduct = ({ onBack, onCreate }) => {
 	const [productData, setProductData] = useState({
@@ -22,6 +22,23 @@ const CreateProduct = ({ onBack, onCreate }) => {
 		dayUpdate: new Date().toISOString(),
 	});
 
+	const [imageData, setImageData] = useState({
+		productImages: [],
+		avatarImage: null,
+	});
+
+	const handleImageUpload = (e, type) => {
+		const files = Array.from(e.target.files);
+		if (type === "product") {
+			setImageData((prev) => ({
+				...prev,
+				productImages: files,
+			}));
+		} else {
+			setImageData((prev) => ({ ...prev, avatarImage: files[0] }));
+		}
+	};
+
 	const handleProductChange = (e) => {
 		const { name, value, type, checked } = e.target;
 		setProductData((prev) => ({
@@ -32,16 +49,16 @@ const CreateProduct = ({ onBack, onCreate }) => {
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
-		onCreate({ productData });
+		onCreate({ productData, imageData });
 	};
 
 	return (
-		<div className="bg-white rounded-lg shadow">
+		<div className="bg-white rounded-lg mt-5 p-5">
 			<div className="bg-blue-500 text-white p-4 rounded-t-lg">
 				Trang chủ / Tạo sản phẩm
 			</div>
 
-			<div className="p-6">
+			<div className="p-6 shadow-sm">
 				<button
 					onClick={onBack}
 					className="mb-6 bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded flex items-center"
@@ -91,6 +108,38 @@ const CreateProduct = ({ onBack, onCreate }) => {
 								)}
 							</div>
 						))}
+					</div>
+					{/* Image Uploads */}
+					<div className="space-y-4">
+						<h2 className="text-xl font-bold">Hình ảnh sản phẩm</h2>
+						<div className="grid grid-cols-2 gap-4">
+							<div>
+								<label className="block mb-1">
+									Hình ảnh sản phẩm
+								</label>
+								<div className="border-2 border-dashed rounded p-4 text-center">
+									<input
+										type="file"
+										multiple
+										onChange={(e) =>
+											handleImageUpload(e, "product")
+										}
+										className="hidden"
+										id="productImages"
+										required
+									/>
+									<label
+										htmlFor="productImages"
+										className="cursor-pointer flex flex-col items-center"
+									>
+										<Upload className="w-8 h-8 text-gray-400" />
+										<span className="mt-2 text-sm text-gray-600">
+											Tải ảnh lên
+										</span>
+									</label>
+								</div>
+							</div>
+						</div>
 					</div>
 					<button
 						type="submit"

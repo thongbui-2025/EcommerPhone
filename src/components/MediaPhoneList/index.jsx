@@ -102,8 +102,8 @@ export default function MediaPhoneList() {
 		];
 		return products.filter(
 			(product) =>
-				product.sku.defaultPrice >= min &&
-				product.sku.defaultPrice <= max
+				product?.sku?.defaultPrice >= min &&
+				product?.sku?.defaultPrice <= max
 		);
 	};
 
@@ -176,8 +176,8 @@ export default function MediaPhoneList() {
 							>
 								<img
 									src={
-										"https://localhost:7011/uploads/" +
-											product.image.imageName ||
+										`https://localhost:7011/uploads/${product.id}/` +
+											product?.image?.imageName ||
 										"/placeholder.svg"
 									}
 									alt={product.name}
@@ -188,8 +188,8 @@ export default function MediaPhoneList() {
 								</h3>
 								<p className="text-red-600 font-bold text-center mb-4">
 									{formatPrice(
-										product.sku?.finalPrice ||
-											product.sku?.defaultPrice
+										product?.sku?.finalPrice ||
+											product?.sku?.defaultPrice
 									)}
 								</p>
 								<div className="grid grid-cols-2 gap-2">
@@ -214,7 +214,7 @@ export default function MediaPhoneList() {
 						<div className="text-center mt-8">
 							<button
 								onClick={() => setShowAll(true)}
-								className="inline-flex items-center gap-2 px-4 py-2 border rounded-md hover:bg-gray-50"
+								className="inline-flex items-center gap-2 px-4 py-2 border rounded-md hover:bg-gray-50 cursor-pointer"
 							>
 								Xem thêm
 								<ChevronDown className="w-4 h-4" />

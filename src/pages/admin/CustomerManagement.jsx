@@ -27,7 +27,11 @@ const CustomerManagement = () => {
 		axios
 			.get("/Auth")
 			.then((response) => {
-				setCustomers(response.data);
+				// Xử lý tài khoản tự sinh Admin
+				const customersUser = response.data.filter(
+					(c) => c.userName != "admin@test.com"
+				);
+				setCustomers(customersUser);
 			})
 			.catch((error) => {
 				console.log(error);

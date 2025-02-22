@@ -1,37 +1,83 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Edit2 } from "lucide-react";
 import VnPay from "./VnPay";
-import { formatPrice } from "../../utils/formatPrice";
-// import { useParams } from "react-router";
+import axios from "axios";
 
 const Payment = () => {
 	const [selectedAddress, setSelectedAddress] = useState("default");
 	const [customAddress, setCustomAddress] = useState("");
-	const [paymentMethod, setPaymentMethod] = useState("cash");
+	const [paymentMethod, setPaymentMethod] = useState(0);
 	const [showCompletePay, setShowCompletePay] = useState(false);
-	// const { cardId } = useParams("cardId");
+	const [customerInfo, setCustomerInfo] = useState([]);
+	// const [responsePayment, setResponsePm] = useState([]);
+	const [cartItems, setCartItems] = useState([]);
+	const token = localStorage.getItem("token");
+	const cartId = localStorage.getItem("cartId");
 
-	const [products, setProducts] = [
-		// {
-		// 	id: 1,
-		// 	name: "iPhone 12 Mini 64GB",
-		// 	image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-XZb0EdamED0thuP9ud1iYqkYJsG0k4.png",
-		// 	quantity: 1,
-		// 	price: 30000000,
-		// },
-		// {
-		// 	id: 2,
-		// 	name: "iPhone 11 Pro Max 64GB",
-		// 	image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-XZb0EdamED0thuP9ud1iYqkYJsG0k4.png",
-		// 	quantity: 1,
-		// 	price: 20000000,
-		// },
-	];
+	useEffect(() => {
+		axios
+			.get("/Auth/profile", {
+				headers: { Authorization: `Bearer ${token}` },
+			})
+			.then((response) => setCustomerInfo(response.data))
+			.catch((error) => console.error("Lỗi khi lấy dữ liệu:", error));
 
-	const totalAmount = products.reduce(
-		(sum, product) => sum + product.price * product.quantity,
+		const fetchData = async () => {
+			try {
+				const cartResponse = await axios.get(
+					`/Cart_Item/getSelected?cartId=${cartId}`
+				);
+				const cartItemsData = cartResponse.data;
+
+				if (cartItemsData.length > 0) {
+					const skuResponses = await Promise.all(
+						cartItemsData.map((item) =>
+							axios.get(`/Product_SKU/${item.product_SKUId}`)
+						)
+					);
+
+					const skuData = skuResponses.map((res) => res.data);
+
+					const productResponses = await Promise.all(
+						skuData.map((sku) =>
+							axios.get(`/Products/${sku.productId}`)
+						)
+					);
+
+					const productData = productResponses.map((res) => res.data);
+
+					const enrichedCartItems = cartItemsData.map(
+						(item, index) => ({
+							...item,
+							product_SKU: skuData[index],
+							product: productData[index],
+						})
+					);
+
+					setCartItems(enrichedCartItems);
+				} else {
+					setCartItems([]);
+				}
+			} catch (error) {
+				console.error("Lỗi khi lấy dữ liệu:", error);
+			}
+		};
+
+		if (cartId) {
+			fetchData();
+		}
+	}, []);
+	console.log(cartItems);
+
+	const totalAmount = cartItems.reduce(
+		(sum, item) =>
+			sum + (item.product_SKU?.finalPrice * item.quantity || 0),
 		0
 	);
+
+	const formatPrice = (price) => {
+		return new Intl.NumberFormat("vi-VN").format(price) + " đ";
+	};
 
 	return (
 		<div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md">
@@ -42,16 +88,16 @@ const Payment = () => {
 				</h2>
 				<div className="space-y-2">
 					<p>
-						<span className="font-semibold">Họ và tên:</span> Trần
-						Luân Hy
+						<span className="font-semibold">Họ và tên:</span>{" "}
+						{customerInfo.fullName}
 					</p>
 					<p>
 						<span className="font-semibold">Email:</span>{" "}
-						hytranluan@gmail.com
+						{customerInfo.email}
 					</p>
 					<p>
 						<span className="font-semibold">Điện thoại:</span>{" "}
-						0765006381
+						{customerInfo.phoneNumber}
 					</p>
 				</div>
 			</div>
@@ -73,7 +119,7 @@ const Payment = () => {
 					</div>
 					{selectedAddress === "default" && (
 						<div className="ml-6 p-2 bg-gray-50 rounded">
-							123 đường Mạc Thiên Tích P.11 Q.5
+							{customerInfo.address}
 						</div>
 					)}
 
@@ -111,12 +157,12 @@ const Payment = () => {
 							type="radio"
 							id="cash"
 							name="payment"
-							checked={paymentMethod === "cash"}
-							onChange={() => setPaymentMethod("cash")}
+							checked={paymentMethod === 0}
+							onChange={() => setPaymentMethod(0)}
 							className="w-4 h-4"
 						/>
 						<label htmlFor="cash">
-							Tiền mặt - Chỉ hỗ trợ trả tiền mặt khi nhận hàng
+							Thanh toán khi nhận hàng (COD)
 						</label>
 					</div>
 
@@ -125,8 +171,8 @@ const Payment = () => {
 							type="radio"
 							id="vnpay"
 							name="payment"
-							checked={paymentMethod === "vnpay"}
-							onChange={() => setPaymentMethod("vnpay")}
+							checked={paymentMethod === 1}
+							onChange={() => setPaymentMethod(1)}
 							className="w-4 h-4"
 						/>
 						<label htmlFor="vnpay">Thanh toán qua VNPay</label>
@@ -153,26 +199,46 @@ const Payment = () => {
 							</tr>
 						</thead>
 						<tbody>
-							{products.map((product) => (
-								<tr key={product.id} className="border-t">
+							{cartItems.map((item) => (
+								<tr
+									key={item?.product_SKU?.id}
+									className="border-t"
+								>
 									<td className="p-4">
 										<div className="flex items-center gap-4">
-											<img
+											{/* <img
 												src={
 													product.image ||
 													"/placeholder.svg"
 												}
 												alt={product.name}
 												className="w-16 h-16 object-cover rounded"
-											/>
-											{product.name}
+											/> */}
+											<div>
+												<span className="font-medium block">
+													{item.product?.name ||
+														"Đang tải..."}
+												</span>
+												<span className="text-sm text-gray-500 block">
+													{item.product_SKU?.raM_ROM
+														? `Bộ nhớ: ${item.product_SKU.raM_ROM}`
+														: ""}
+												</span>
+												<span className="text-sm text-gray-500 block">
+													{item.product_SKU?.color
+														? `Màu: ${item.product_SKU.color}`
+														: ""}
+												</span>
+											</div>
 										</div>
 									</td>
 									<td className="p-4 text-center">
-										{product.quantity}
+										{item.quantity}
 									</td>
 									<td className="p-4 text-right">
-										{formatPrice(product.price)}
+										{formatPrice(
+											item.product_SKU?.finalPrice
+										)}
 									</td>
 								</tr>
 							))}
@@ -192,19 +258,31 @@ const Payment = () => {
 			{/* Complete Order Button */}
 			<button
 				onClick={() => {
-					if (paymentMethod === "vnpay") {
-						setShowCompletePay(true);
-					} else {
-						// Handle cash payment or show a different component
-						console.log("Order completed with:", {
-							address:
-								selectedAddress === "custom"
-									? customAddress
-									: "123 đường Mạc Thiên Tích P.11 Q.5",
-							paymentMethod,
-							totalAmount,
-						});
-					}
+					axios
+						.post(`/Cart_Item/Purchase`, null, {
+							params: {
+								userId: customerInfo.id,
+								cartId: cartId,
+								name: customerInfo.fullName,
+								phoneNumber: customerInfo.phoneNumber,
+								address:
+									selectedAddress === "custom"
+										? customAddress
+										: customerInfo.address,
+								pm: paymentMethod,
+							},
+						})
+						.then((response) => {
+							if (paymentMethod === 1) {
+								window.open(response.data, "_blank"); // Opens in a new window/tab
+							} else {
+								// Handle other payment methods here
+								console.log("Other payment method selected.");
+							}
+						})
+						.catch((error) =>
+							console.error("Lỗi khi lấy dữ liệu:", error)
+						);
 				}}
 				className="w-full bg-red-600 text-white py-3 rounded font-bold hover:bg-red-700 transition-colors"
 			>

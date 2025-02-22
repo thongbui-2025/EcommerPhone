@@ -77,13 +77,13 @@ const ProductDetails = ({ product, onBack }) => {
 		}
 	};
 	return (
-		<div className="bg-white rounded-lg shadow">
+		<div className="bg-white rounded-lg p-8 mt-5">
 			{/* Breadcrumb */}
 			<div className="bg-blue-400 text-white p-4 rounded-t-lg">
 				Trang chủ / Sản phẩm / {product.name}
 			</div>
 
-			<div className="p-6">
+			<div className="p-6 shadow">
 				{/* Back Button */}
 				<button
 					onClick={onBack}
@@ -98,8 +98,8 @@ const ProductDetails = ({ product, onBack }) => {
 					<div>
 						<img
 							src={
-								"https://localhost:7011/uploads/" +
-									product.images.imageName ||
+								`https://localhost:7011/uploads/${product.id}/` +
+									product?.images?.imageName ||
 								"/placeholder.svg"
 							}
 							alt={product.name}
