@@ -87,24 +87,24 @@ export default function ShoppingCart() {
 
 	console.log(cartItems);
 
-	// const updateQuantity = (id, change) => {
-	// 	setCartItems((items) =>
-	// 		items.map((item) =>
-	// 			item.id === id
-	// 				? { ...item, quantity: Math.max(1, item.quantity + change) }
-	// 				: item
-	// 		)
-	// 	);
-	// };
 	const updateQuantity = async (id, change) => {
 		const currentItem = cartItems.find((item) => item.id === id);
 		if (!currentItem) return;
 
+		const maxQuantity = currentItem.product_SKU.quantity;
+		const newQuantity = Math.max(
+			1,
+			Math.min(currentItem.quantity + change, maxQuantity)
+		);
+
+		if (newQuantity === currentItem.quantity) {
+			alert("Số lượng sản phẩm đã đạt giới hạn kho!");
+			return;
+		}
+
 		setCartItems((items) =>
 			items.map((item) =>
-				item.id === id
-					? { ...item, quantity: Math.max(1, item.quantity + change) }
-					: item
+				item.id === id ? { ...item, quantity: newQuantity } : item
 			)
 		);
 

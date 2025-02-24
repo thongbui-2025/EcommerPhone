@@ -98,9 +98,8 @@ const ProductDetails = ({ product, onBack }) => {
 					<div>
 						<img
 							src={
-								`https://localhost:7011/uploads/${product.id}/` +
-									product?.images?.imageName ||
-								"/placeholder.svg"
+								`https://localhost:7011/uploads/${selectedSku?.productId}/` +
+									selectedSku?.imageName || "/placeholder.svg"
 							}
 							alt={product.name}
 							className="w-full h-auto object-cover rounded-lg"

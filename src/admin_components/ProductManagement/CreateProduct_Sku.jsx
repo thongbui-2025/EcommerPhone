@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ArrowLeft, Upload, X } from "lucide-react";
 
-const CreateProductSku_Image = ({ onBack, onCreate }) => {
+const CreateProduct_Sku = ({ onBack, onCreate }) => {
 	const [skuData, setSkuData] = useState({
 		productId: "",
 		raM_ROM: "",
@@ -205,4 +205,4 @@ const CreateProductSku_Image = ({ onBack, onCreate }) => {
 	);
 };
 
-export default CreateProductSku_Image;
+export default CreateProduct_Sku;

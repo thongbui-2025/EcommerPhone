@@ -1,18 +1,20 @@
 import { useEffect, useState } from "react";
 import { Edit2 } from "lucide-react";
-import VnPay from "./VnPay";
 import axios from "axios";
+import { useLocation } from "react-router-dom";
 
 const Payment = () => {
 	const [selectedAddress, setSelectedAddress] = useState("default");
 	const [customAddress, setCustomAddress] = useState("");
 	const [paymentMethod, setPaymentMethod] = useState(0);
-	const [showCompletePay, setShowCompletePay] = useState(false);
 	const [customerInfo, setCustomerInfo] = useState([]);
-	// const [responsePayment, setResponsePm] = useState([]);
 	const [cartItems, setCartItems] = useState([]);
 	const token = localStorage.getItem("token");
 	const cartId = localStorage.getItem("cartId");
+
+	const { state } = useLocation();
+	const buyNowProduct = state?.buyNowProduct;
+	console.log(buyNowProduct);
 
 	useEffect(() => {
 		axios
@@ -23,43 +25,58 @@ const Payment = () => {
 			.catch((error) => console.error("Lỗi khi lấy dữ liệu:", error));
 
 		const fetchData = async () => {
-			try {
-				const cartResponse = await axios.get(
-					`/Cart_Item/getSelected?cartId=${cartId}`
+			if (buyNowProduct) {
+				const productResponse = await axios.get(
+					`/Products/${buyNowProduct.productId}`
 				);
-				const cartItemsData = cartResponse.data;
+				const productData = productResponse.data;
 
-				if (cartItemsData.length > 0) {
-					const skuResponses = await Promise.all(
-						cartItemsData.map((item) =>
-							axios.get(`/Product_SKU/${item.product_SKUId}`)
-						)
+				setCartItems([
+					{
+						product: productData,
+						product_SKU: buyNowProduct,
+						quantity: 1,
+					},
+				]);
+			} else if (cartId) {
+				try {
+					const cartResponse = await axios.get(
+						`/Cart_Item/getSelected?cartId=${cartId}`
 					);
+					const cartItemsData = cartResponse.data;
 
-					const skuData = skuResponses.map((res) => res.data);
+					if (cartItemsData.length > 0) {
+						const skuResponses = await Promise.all(
+							cartItemsData.map((item) =>
+								axios.get(`/Product_SKU/${item.product_SKUId}`)
+							)
+						);
+						const skuData = skuResponses.map((res) => res.data);
 
-					const productResponses = await Promise.all(
-						skuData.map((sku) =>
-							axios.get(`/Products/${sku.productId}`)
-						)
-					);
+						const productResponses = await Promise.all(
+							skuData.map((sku) =>
+								axios.get(`/Products/${sku.productId}`)
+							)
+						);
+						const productData = productResponses.map(
+							(res) => res.data
+						);
 
-					const productData = productResponses.map((res) => res.data);
+						const enrichedCartItems = cartItemsData.map(
+							(item, index) => ({
+								...item,
+								product_SKU: skuData[index],
+								product: productData[index],
+							})
+						);
 
-					const enrichedCartItems = cartItemsData.map(
-						(item, index) => ({
-							...item,
-							product_SKU: skuData[index],
-							product: productData[index],
-						})
-					);
-
-					setCartItems(enrichedCartItems);
-				} else {
-					setCartItems([]);
+						setCartItems(enrichedCartItems);
+					} else {
+						setCartItems([]);
+					}
+				} catch (error) {
+					console.error("Lỗi khi lấy dữ liệu:", error);
 				}
-			} catch (error) {
-				console.error("Lỗi khi lấy dữ liệu:", error);
 			}
 		};
 
@@ -270,6 +287,8 @@ const Payment = () => {
 										? customAddress
 										: customerInfo.address,
 								pm: paymentMethod,
+								product_SKUId: buyNowProduct?.id,
+								quantity: 1,
 							},
 						})
 						.then((response) => {
@@ -288,12 +307,6 @@ const Payment = () => {
 			>
 				HOÀN TẤT ĐẶT HÀNG
 			</button>
-			{showCompletePay && (
-				<VnPay
-					totalAmount={totalAmount}
-					onClose={() => setShowCompletePay(false)}
-				/>
-			)}
 		</div>
 	);
 };

@@ -1,11 +1,12 @@
-import { ChevronDown, ChevronLeft } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router";
+import { useParams } from "react-router";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 export default function ProductDetails() {
-	const [isExpanded, setIsExpanded] = useState(false);
+	// const [isExpanded, setIsExpanded] = useState(false);
 	const { id } = useParams();
+	const cartId = localStorage.getItem("cartId");
 	console.log("productId:", id);
 
 	const [product, setProduct] = useState({
@@ -15,6 +16,7 @@ export default function ProductDetails() {
 	const [selectedMemory, setSelectedMemory] = useState(null);
 	const [selectedColor, setSelectedColor] = useState(null);
 	const [selectedSku, setSelectedSku] = useState(null);
+	const navigate = useNavigate();
 
 	useEffect(() => {
 		Promise.all([
@@ -24,11 +26,8 @@ export default function ProductDetails() {
 		])
 			.then(([productsRes, imagesRes, skusRes]) => {
 				const products = productsRes.data;
-				// console.log(products);
 				const images = imagesRes.data;
-				// console.log(images);
 				const skus = skusRes.data;
-				// console.log(skus);
 				const availableSkus = skus.filter(
 					(sku) => sku.quantity > 0 && sku.isAvailable
 				);
@@ -103,6 +102,34 @@ export default function ProductDetails() {
 			);
 		}
 	};
+
+	const [loading, setLoading] = useState(false);
+
+	const handleAddToCart = async () => {
+		setLoading(true);
+		try {
+			const response = await axios.post("/Product_SKU/addToCart", null, {
+				params: {
+					cartId: cartId,
+					product_SKUId: selectedSku.id,
+				},
+			});
+			console.log("Added to cart:", response.data);
+			alert("Thêm vào giỏ hàng thành công!");
+		} catch (error) {
+			console.error("Error adding to cart:", error);
+			alert("Có lỗi xảy ra khi thêm vào giỏ.");
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	const handleBuyNow = () => {
+		navigate("/cart/payment-info", {
+			state: { buyNowProduct: selectedSku, quantity: 1 },
+		});
+	};
+
 	return (
 		<div className="container mx-auto px-4 py-8 max-w-6xl">
 			<div className="bg-white rounded-lg shadow-sm p-6">
@@ -113,8 +140,8 @@ export default function ProductDetails() {
 						<div className="aspect-square relative">
 							<img
 								src={
-									`https://localhost:7011/uploads/${product.id}/` +
-									product?.images?.[0]?.imageName
+									`https://localhost:7011/uploads/${selectedSku?.productId}/` +
+									selectedSku?.imageName
 								}
 								// src="https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/d/i/dien-thoai-xiaomi-redmi-note-14_2__2.png"
 								alt="iPhone 12"
@@ -137,7 +164,8 @@ export default function ProductDetails() {
 						<p className="text-gray-700 text-sm">
 							{product.description}
 						</p>
-						<div className="flex gap-4">
+
+						{/* <div className="flex gap-4">
 							<Link to="/cart">
 								<button className="bg-red-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-red-700 cursor-pointer transition-colors">
 									MUA NGAY
@@ -149,7 +177,7 @@ export default function ProductDetails() {
 									Quay lại
 								</button>
 							</Link>
-						</div>
+						</div> */}
 					</div>
 
 					{/* Right Column - Specifications */}
@@ -202,6 +230,21 @@ export default function ProductDetails() {
 								</h3>
 							)}
 						</div>
+						<div className="p-4 flex gap-4">
+							<button
+								className="bg-white text-[#2193B0] border border-[#2193B0] px-4 py-2 rounded-lg hover:bg-[#E0F7FB] disabled:opacity-50"
+								onClick={handleAddToCart}
+								disabled={loading}
+							>
+								{loading ? "Đang thêm..." : "Thêm vào giỏ"}
+							</button>
+							<button
+								onClick={handleBuyNow}
+								className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+							>
+								Mua ngay
+							</button>
+						</div>
 
 						<div className="border rounded-lg p-4 mb-6">
 							<h2 className="text-lg font-bold mb-4">
@@ -229,7 +272,7 @@ export default function ProductDetails() {
 						</div>
 
 						{/* Product Features */}
-						<div className="space-y-4">
+						{/* <div className="space-y-4">
 							<h2 className="text-lg font-bold">
 								Đặc điểm nổi bật của iPhone 12
 							</h2>
@@ -266,29 +309,8 @@ export default function ProductDetails() {
 									}`}
 								/>
 							</button>
-						</div>
+						</div> */}
 					</div>
-
-					{/* <div className="overflow-x-auto">
-						<div className="space-y-6">
-							<h1 className="text-2xl font-bold">
-								{product.name}
-							</h1>
-							<div className="aspect-square relative"></div>
-							<div className="text-center">
-								<span className="text-3xl font-bold text-red-600">
-									{product.price}
-								</span>
-							</div>
-							<p className="text-gray-700 text-sm">
-								{product.description}
-							</p>
-							<div className="flex gap-4"></div>
-						</div>
-						<div>
-							<div className="border rounded-lg p-4 mb-6"></div>
-						</div>
-					</div> */}
 				</div>
 			</div>
 		</div>

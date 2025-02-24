@@ -1,17 +1,52 @@
-import { useState } from "react";
-import { ArrowLeft, Upload } from "lucide-react";
+"use client";
+
+import { useEffect, useState } from "react";
+import { ArrowLeft } from "lucide-react";
+import axios from "axios";
 
 const UpdateProduct = ({ product, onBack, onUpdate }) => {
+	console.log(product);
+
 	const [productData, setProductData] = useState({
-		name: product.name,
-		price: product.price,
-		category: product.category || "",
-		quantity: product.quantity,
-		shortDescription: product.shortDescription || "",
-		detailedDescription: product.description || "",
-		productImages: [],
-		avatarImage: null,
+		id: product?.id || 0,
+		name: product?.name || "",
+		description: product?.description || "",
+		brandId: product?.brandId || "",
+		chip: product?.chip || "",
+		size: product?.size || "",
+		lxWxHxW: product?.lxWxHxW || "",
+		display: product?.display || "",
+		frontCamera: product?.frontCamera || "",
+		rearCamera: product?.rearCamera || "",
+		battery: product?.battery || "",
+		charger: product?.charger || "",
+		accessories: product?.accessories || "",
+		quality: product?.quality || "",
+		sold: product?.sold || 0,
+		isAvailable: product?.isAvailable ?? true,
+		dayCreate: product?.dayCreate || new Date().toISOString(),
+		dayUpdate: new Date().toISOString(),
 	});
+
+	const [productImage, setProductImage] = useState({
+		id: product?.images?.id,
+		productId: product?.id || 0,
+		imageName: product?.images?.imageName || "",
+		isMain: product?.images?.isMain,
+		createdAt: product?.createdAt || new Date().toISOString(),
+	});
+
+	const [brands, setBrands] = useState([]);
+
+	useEffect(() => {
+		// Lấy danh sách Brands
+		axios
+			.get("/Brands")
+			.then((response) => setBrands(response.data))
+			.catch((error) => console.error("Error fetching brands:", error));
+	}, []);
+
+	// console.log(brands);
 
 	const handleInputChange = (e) => {
 		const { name, value } = e.target;
@@ -21,43 +56,22 @@ const UpdateProduct = ({ product, onBack, onUpdate }) => {
 		}));
 	};
 
-	const handleImageUpload = (e, type) => {
-		const files = Array.from(e.target.files);
-		if (type === "avatar") {
-			setProductData((prev) => ({
-				...prev,
-				avatarImage: files[0],
-			}));
-		} else {
-			setProductData((prev) => ({
-				...prev,
-				productImages: files,
-			}));
-		}
-	};
-
 	const handleSubmit = (e) => {
 		e.preventDefault();
-		// Simulate API call to update product
-		console.log("Updating product:", productData);
-		// Call the onUpdate function passed from the parent component
 		onUpdate({
-			...product,
 			...productData,
+			images: productImage,
 		});
-		// Return to product list after update
 		onBack();
 	};
 
 	return (
-		<div className="bg-white rounded-lg shadow">
-			{/* Breadcrumb */}
+		<div className="bg-white rounded-lg mt-5 p-5">
 			<div className="bg-blue-400 text-white p-4 rounded-t-lg">
 				Trang chủ / Sản phẩm / Cập nhật sản phẩm
 			</div>
 
-			<div className="p-6">
-				{/* Back Button */}
+			<div className="p-6 shadow">
 				<button
 					onClick={onBack}
 					className="mb-6 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 flex items-center gap-2"
@@ -70,152 +84,223 @@ const UpdateProduct = ({ product, onBack, onUpdate }) => {
 					<div className="grid grid-cols-2 gap-6">
 						{/* Left Column */}
 						<div className="space-y-4">
-							{/* Product Name */}
 							<div>
-								<label className="block mb-1">Tên</label>
+								<label className="block mb-1">
+									Tên sản phẩm
+								</label>
 								<input
 									type="text"
 									name="name"
 									value={productData.name}
 									onChange={handleInputChange}
 									className="w-full p-2 border rounded"
-									placeholder="Tên sản phẩm"
 								/>
 							</div>
 
-							{/* Price */}
-							<div>
-								<label className="block mb-1">Giá</label>
-								<input
-									type="number"
-									name="price"
-									value={productData.price}
-									onChange={handleInputChange}
-									className="w-full p-2 border rounded"
-									placeholder="Giá sản phẩm"
-								/>
-							</div>
-
-							{/* Category */}
-							<div>
-								<label className="block mb-1">Danh mục</label>
-								<select
-									name="category"
-									value={productData.category}
-									onChange={handleInputChange}
-									className="w-full p-2 border rounded"
-								>
-									<option value="">Chọn danh mục</option>
-									<option value="phones">Điện thoại</option>
-									<option value="tablets">
-										Máy tính bảng
+							<label className="block mb-1">Thương hiệu</label>
+							<select
+								name="brandId"
+								value={productData.brandId}
+								onChange={handleInputChange}
+								className="w-full p-2 border rounded"
+							>
+								{/* <option value="">Chọn thương hiệu</option> */}
+								{brands.map((brand) => (
+									<option key={brand.id} value={brand.id}>
+										{brand.name}
 									</option>
-								</select>
-							</div>
+								))}
+							</select>
 
-							{/* Quantity */}
 							<div>
-								<label className="block mb-1">Số lượng</label>
+								<label className="block mb-1">Chip</label>
 								<input
-									type="number"
-									name="quantity"
-									value={productData.quantity}
+									type="text"
+									name="chip"
+									value={productData.chip}
 									onChange={handleInputChange}
 									className="w-full p-2 border rounded"
-									placeholder="Số lượng"
+								/>
+							</div>
+
+							<div>
+								<label className="block mb-1">Kích thước</label>
+								<input
+									type="text"
+									name="size"
+									value={productData.size}
+									onChange={handleInputChange}
+									className="w-full p-2 border rounded"
+								/>
+							</div>
+
+							<div>
+								<label className="block mb-1">
+									Kích thước chi tiết (DxRxCxN)
+								</label>
+								<input
+									type="text"
+									name="lxWxHxW"
+									value={productData.lxWxHxW}
+									onChange={handleInputChange}
+									className="w-full p-2 border rounded"
+								/>
+							</div>
+
+							<div>
+								<label className="block mb-1">Màn hình</label>
+								<input
+									type="text"
+									name="display"
+									value={productData.display}
+									onChange={handleInputChange}
+									className="w-full p-2 border rounded"
 								/>
 							</div>
 						</div>
 
 						{/* Right Column */}
 						<div className="space-y-4">
-							{/* Short Description */}
 							<div>
 								<label className="block mb-1">
-									Mô tả ngắn gọn
+									Camera trước
 								</label>
-								<textarea
-									name="shortDescription"
-									value={productData.shortDescription}
+								<input
+									type="text"
+									name="frontCamera"
+									value={productData.frontCamera}
 									onChange={handleInputChange}
 									className="w-full p-2 border rounded"
-									rows="4"
-									placeholder="Mô tả ngắn gọn về sản phẩm"
 								/>
 							</div>
 
-							{/* Detailed Description */}
 							<div>
-								<label className="block mb-1">
-									Mô tả chi tiết
-								</label>
-								<textarea
-									name="detailedDescription"
-									value={productData.detailedDescription}
+								<label className="block mb-1">Camera sau</label>
+								<input
+									type="text"
+									name="rearCamera"
+									value={productData.rearCamera}
 									onChange={handleInputChange}
 									className="w-full p-2 border rounded"
-									rows="4"
-									placeholder="Mô tả chi tiết về sản phẩm"
 								/>
 							</div>
 
-							{/* Image Uploads */}
-							<div className="grid grid-cols-2 gap-4">
-								<div>
-									<label className="block mb-1">
-										Hình ảnh sản phẩm
-									</label>
-									<div className="border-2 border-dashed rounded p-4 text-center">
-										<input
-											type="file"
-											multiple
-											onChange={(e) =>
-												handleImageUpload(e, "product")
-											}
-											className="hidden"
-											id="productImages"
-										/>
-										<label
-											htmlFor="productImages"
-											className="cursor-pointer flex flex-col items-center"
-										>
-											<Upload className="w-8 h-8 text-gray-400" />
-											<span className="mt-2 text-sm text-gray-600">
-												Tải ảnh lên
-											</span>
-										</label>
-									</div>
-								</div>
+							<div>
+								<label className="block mb-1">Pin</label>
+								<input
+									type="text"
+									name="battery"
+									value={productData.battery}
+									onChange={handleInputChange}
+									className="w-full p-2 border rounded"
+								/>
+							</div>
 
-								<div>
-									<label className="block mb-1">
-										Hình ảnh đại diện
-									</label>
-									<div className="border-2 border-dashed rounded p-4 text-center">
-										<input
-											type="file"
-											onChange={(e) =>
-												handleImageUpload(e, "avatar")
-											}
-											className="hidden"
-											id="avatarImage"
-										/>
-										<label
-											htmlFor="avatarImage"
-											className="cursor-pointer flex flex-col items-center"
-										>
-											<Upload className="w-8 h-8 text-gray-400" />
-											<span className="mt-2 text-sm text-gray-600">
-												Tải ảnh lên
-											</span>
-										</label>
-									</div>
-								</div>
+							<div>
+								<label className="block mb-1">Sạc</label>
+								<input
+									type="text"
+									name="charger"
+									value={productData.charger}
+									onChange={handleInputChange}
+									className="w-full p-2 border rounded"
+								/>
+							</div>
+
+							<div>
+								<label className="block mb-1">Phụ kiện</label>
+								<input
+									type="text"
+									name="accessories"
+									value={productData.accessories}
+									onChange={handleInputChange}
+									className="w-full p-2 border rounded"
+								/>
+							</div>
+
+							<div>
+								<label className="block mb-1">Chất lượng</label>
+								<input
+									type="text"
+									name="quality"
+									value={productData.quality}
+									onChange={handleInputChange}
+									className="w-full p-2 border rounded"
+								/>
 							</div>
 						</div>
 					</div>
 
-					{/* Submit Button */}
+					<div className="grid grid-cols-2 gap-6">
+						<div>
+							<label className="block mb-1">Mô tả</label>
+							<textarea
+								name="description"
+								value={productData.description}
+								onChange={handleInputChange}
+								className="w-full p-2 border rounded"
+								rows="4"
+							/>
+						</div>
+
+						<div className="space-y-4">
+							<div>
+								<label className="block mb-1">
+									Hình ảnh sản phẩm
+								</label>
+								<input
+									type="file"
+									accept="image/*"
+									onChange={(e) => {
+										const file = e.target.files?.[0];
+										if (file) {
+											setProductImage((prev) => ({
+												...prev,
+												imageName: file.name,
+												// file: file, // Add the actual file to the state
+											}));
+										}
+									}}
+									className="w-full p-2 border rounded"
+								/>
+								{productImage.imageName && (
+									<p className="mt-2 text-sm text-gray-600">
+										File đã chọn: {productImage.imageName}
+									</p>
+								)}
+							</div>
+							<div>
+								<label className="block mb-1">Đã bán</label>
+								<input
+									type="number"
+									name="sold"
+									value={productData.sold}
+									onChange={handleInputChange}
+									className="w-full p-2 border rounded"
+									disabled
+								/>
+							</div>
+
+							<div>
+								<label className="flex items-center gap-2">
+									<input
+										type="checkbox"
+										name="isAvailable"
+										checked={productData.isAvailable}
+										onChange={(e) =>
+											setProductData((prev) => ({
+												...prev,
+												isAvailable: e.target.checked,
+											}))
+										}
+										className="rounded"
+									/>
+									Còn hàng
+								</label>
+							</div>
+						</div>
+					</div>
+
 					<div>
 						<button
 							type="submit"

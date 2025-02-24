@@ -1,27 +1,26 @@
 // import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import "./index.css";
 import { createBrowserRouter, RouterProvider } from "react-router";
+import axios from "axios";
+import "./index.css";
+import AuthLayout from "./layout/AuthLayout.jsx";
+import AdminLayout from "./layout/AdminLayout.jsx";
+import UserLayout from "./layout/UserLayout.jsx";
 import HomePage from "./pages/user/HomePage.jsx";
 import RegistrationForm from "./pages/user/RegistrationForm.jsx";
 import LoginForm from "./pages/user/LoginForm.jsx";
-import AuthLayout from "./layout/AuthLayout.jsx";
-import ProductDetails from "./components/ProductDetails";
-import ShoppingCart from "./components/ShoppingCart";
-import MediaPhoneList from "./components/MediaPhoneList";
-import Profile from "./components/Profile";
-import PurchaseHistory from "./components/PurchaseHistory";
-import UserLayout from "./layout/UserLayOut.jsx";
-import AdminLayout from "./layout/AdminLayout.jsx";
-import Payment from "./components/Payment/index.jsx";
 import LoginPage from "./pages/admin/LoginPage.jsx";
-import axios from "axios";
-import SendMail from "./utils/sendMail.jsx";
-import SearchPhone from "./components/SearchPhone/index.jsx";
 import ProductManagement from "./pages/admin/ProductManagement.jsx";
 import CategoryManagement from "./pages/admin/CategoryManagement.jsx";
 import CustomerManagement from "./pages/admin/CustomerManagement.jsx";
 import OrderManagement from "./pages/admin/OrderManagement.jsx";
+import ProductDetails from "./components/ProductDetails";
+import ShoppingCart from "./components/ShoppingCart";
+import Profile from "./components/Profile";
+import PurchaseHistory from "./components/PurchaseHistory";
+import Payment from "./components/Payment/index.jsx";
+import FavoritePhone from "./components/FavoritePhone/index.jsx";
+import SendMail from "./utils/sendMail.jsx";
 
 axios.defaults.baseURL = "https://localhost:7011/api/";
 
@@ -38,14 +37,6 @@ const router = createBrowserRouter([
 				element: <ProductDetails />,
 			},
 			{
-				path: "/:brand",
-				element: <MediaPhoneList />,
-			},
-			{
-				path: "/search/:keyword",
-				element: <SearchPhone />,
-			},
-			{
 				path: "/cart",
 				element: <ShoppingCart />,
 			},
@@ -56,6 +47,10 @@ const router = createBrowserRouter([
 			{
 				path: "/profile",
 				element: <Profile />,
+			},
+			{
+				path: "/favorite",
+				element: <FavoritePhone />,
 			},
 			{
 				path: "/purchase-history",
@@ -72,6 +67,7 @@ const router = createBrowserRouter([
 		children: [
 			{
 				path: "/admin",
+				element: <ProductManagement />,
 				// element: <AdminPage />,
 			},
 			{

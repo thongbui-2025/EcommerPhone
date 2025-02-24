@@ -3,9 +3,9 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import axios from "axios";
 import UpdateProduct from "../../admin_components/ProductManagement/UpdateProduct";
 import ProductDetails from "../../admin_components/ProductManagement/ProductDetails";
-import CreateProduct from "../../admin_components/ProductManagement/CreateProduct";
 import { formatPrice } from "../../utils/formatPrice";
-import CreateProductSku_Image from "../../admin_components/ProductManagement/CreateProductSKU_Image";
+import CreateProduct_Image from "../../admin_components/ProductManagement/CreateProduct_Image";
+import CreateProduct_Sku from "../../admin_components/ProductManagement/CreateProduct_Sku";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -68,8 +68,13 @@ const ProductManagement = () => {
 		}
 	};
 
+	// Lọc theo searchQuery
+	const filteredCustomer = products.filter((product) =>
+		product.name.toLowerCase().includes(searchQuery.toLowerCase())
+	);
+
 	const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-	const displayedProducts = products.slice(
+	const displayedProducts = filteredCustomer.slice(
 		startIndex,
 		startIndex + ITEMS_PER_PAGE
 	);
@@ -95,11 +100,8 @@ const ProductManagement = () => {
 			newProduct = responseProduct.data; // Gán giá trị cho biến toàn cục
 			setProducts((prevProducts) => [...prevProducts, newProduct]);
 			// setShowCreateForm(false);
-
-			// alert("Sản phẩm đã được tạo thành công!");
 		} catch (error) {
 			console.error(error);
-			// alert(error.response?.data?.message || "Có lỗi xảy ra!");
 		}
 
 		// Upload hình ảnh
@@ -150,12 +152,6 @@ const ProductManagement = () => {
 						: product
 				)
 			);
-			// const mergedProducts = products.map((product) =>
-			// 	product.id === newImage.productId
-			// 		? { ...product, images: newImage }
-			// 		: product
-			// );
-
 			setShowCreateForm(false);
 		} catch (error) {
 			console.error(error);
@@ -204,14 +200,52 @@ const ProductManagement = () => {
 	};
 
 	const handleProductUpdate = (updatedProduct) => {
-		setProducts((prevProducts) =>
-			prevProducts?.map((product) =>
-				product.id === updatedProduct.id
-					? { ...product, ...updatedProduct }
-					: product
+		const token = localStorage.getItem("token");
+		axios
+			.put(`/Products/${updatedProduct.id}`, updatedProduct, {
+				headers: {
+					Authorization: `Bearer ${token}`,
+					"Content-Type": "application/json",
+				},
+			})
+			.then(() => {
+				setProducts((prevProducts) =>
+					prevProducts?.map((product) =>
+						product.id === updatedProduct.id
+							? { ...product, ...updatedProduct }
+							: product
+					)
+				);
+				// setProductToUpdate(null);
+			});
+
+		// const formData = new FormData();
+		// formData.append("images", imageData.productImages[0]); // Kiểm tra key ảnh đúng chưa
+
+		axios
+			.put(
+				`/Product_Image/${updatedProduct?.images?.id}`,
+				updatedProduct?.images,
+				{
+					headers: {
+						Authorization: `Bearer ${token}`,
+						"Content-Type": "application/json",
+					},
+				}
 			)
-		);
-		setProductToUpdate(null);
+			.then(() => {
+				setProducts((prevProducts) =>
+					prevProducts?.map((product) =>
+						product.id === updatedProduct?.images?.productId
+							? {
+									...product,
+									images: updatedProduct?.images?.imageName,
+							  }
+							: product
+					)
+				);
+				setProductToUpdate(null);
+			});
 	};
 
 	const handleDeleteClick = (product) => {
@@ -234,7 +268,7 @@ const ProductManagement = () => {
 
 	if (showCreateForm) {
 		return (
-			<CreateProduct
+			<CreateProduct_Image
 				onBack={() => setShowCreateForm(false)}
 				onCreate={handleCreateProduct_Image}
 			/>
@@ -243,7 +277,7 @@ const ProductManagement = () => {
 
 	if (showCreateSkuImageForm) {
 		return (
-			<CreateProductSku_Image
+			<CreateProduct_Sku
 				onBack={() => setShowCreateSkuImageForm(false)}
 				onCreate={handleCreateProductSku}
 			/>

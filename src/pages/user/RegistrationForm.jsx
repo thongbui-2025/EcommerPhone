@@ -6,7 +6,6 @@ const RegisterForm = () => {
 	const [formData, setFormData] = useState({
 		fullName: "",
 		email: "",
-		phone: "",
 		username: "",
 		password: "",
 		confirmPassword: "",
@@ -44,7 +43,6 @@ const RegisterForm = () => {
 			setFormData({
 				fullName: "",
 				email: "",
-				phone: "",
 				username: "",
 				password: "",
 				confirmPassword: "",
@@ -105,15 +103,6 @@ const RegisterForm = () => {
 							name="email"
 							placeholder="Email"
 							value={formData.email}
-							onChange={handleChange}
-							className="p-3 rounded-md border-none bg-white focus:outline-none focus:ring-2 focus:ring-white/50"
-							required
-						/>
-						<input
-							type="tel"
-							name="phone"
-							placeholder="Số điện thoại"
-							value={formData.phone}
 							onChange={handleChange}
 							className="p-3 rounded-md border-none bg-white focus:outline-none focus:ring-2 focus:ring-white/50"
 							required

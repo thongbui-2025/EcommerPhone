@@ -81,8 +81,8 @@ export default function SearchPhone() {
 		];
 		return products.filter(
 			(product) =>
-				product.sku.defaultPrice >= min &&
-				product.sku.defaultPrice <= max
+				product?.sku?.defaultPrice >= min &&
+				product?.sku?.defaultPrice <= max
 		);
 	};
 
@@ -167,8 +167,8 @@ export default function SearchPhone() {
 								</h3>
 								<p className="text-red-600 font-bold text-center mb-4">
 									{formatPrice(
-										product.sku?.finalPrice ||
-											product.sku?.defaultPrice
+										product?.sku?.finalPrice ||
+											product?.sku?.defaultPrice
 									)}
 								</p>
 								<div className="grid grid-cols-2 gap-2">

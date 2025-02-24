@@ -95,10 +95,9 @@ const OrderManagement = () => {
 	// Lọc theo searchQuery
 	const filteredOrders = orders.filter(
 		(order) =>
-			order.receiverName
-				.toLowerCase()
-				.includes(searchQuery.toLowerCase()) &&
-			(selectedStatus === "all" || order.status === selectedStatus)
+			order?.receiverName ||
+			("".toLowerCase().includes(searchQuery.toLowerCase()) &&
+				(selectedStatus === "all" || order.status === selectedStatus))
 	);
 
 	const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;

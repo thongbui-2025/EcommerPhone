@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowLeft, Upload } from "lucide-react";
+import axios from "axios";
 
-const CreateProduct = ({ onBack, onCreate }) => {
+const CreateProduct_Image = ({ onBack, onCreate }) => {
 	const [productData, setProductData] = useState({
 		name: "",
 		description: "",
@@ -26,6 +27,16 @@ const CreateProduct = ({ onBack, onCreate }) => {
 		productImages: [],
 		avatarImage: null,
 	});
+
+	const [brands, setBrands] = useState([]);
+
+	useEffect(() => {
+		// Lấy danh sách Brands
+		axios
+			.get("/Brands")
+			.then((response) => setBrands(response.data))
+			.catch((error) => console.error("Error fetching brands:", error));
+	}, []);
 
 	const handleImageUpload = (e, type) => {
 		const files = Array.from(e.target.files);
@@ -93,6 +104,25 @@ const CreateProduct = ({ onBack, onCreate }) => {
 										className="mr-2"
 										required
 									/>
+								) : key === "brandId" ? (
+									<select
+										name="brandId"
+										value={productData[key]}
+										onChange={handleProductChange}
+										className="w-full p-2 border rounded"
+									>
+										<option value="">
+											Chọn thương hiệu
+										</option>
+										{brands.map((brand) => (
+											<option
+												key={brand.id}
+												value={brand.id}
+											>
+												{brand.name}
+											</option>
+										))}
+									</select>
 								) : (
 									<input
 										type={
@@ -153,4 +183,4 @@ const CreateProduct = ({ onBack, onCreate }) => {
 	);
 };
 
-export default CreateProduct;
+export default CreateProduct_Image;
