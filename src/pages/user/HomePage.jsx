@@ -1,11 +1,11 @@
-import Slider from "react-slick";
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { useLocation, useOutletContext } from "react-router-dom";
 import { ChevronRight, ChevronLeft, ChevronDown } from "lucide-react";
+import ProductCard from "../../components/ProductCard";
+import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import ProductCard from "../../components/ProductCard";
-import { useEffect, useState } from "react";
-import axios from "axios";
-import { useOutletContext } from "react-router";
 
 const CustomPrevArrow = ({ onClick }) => (
 	<button
@@ -50,6 +50,8 @@ export default function Homepage() {
 
 	const userId = localStorage.getItem("userId");
 
+	const location = useLocation();
+
 	const bannerSettings = {
 		dots: true,
 		infinite: true,
@@ -60,6 +62,12 @@ export default function Homepage() {
 		prevArrow: <CustomPrevArrow />,
 		nextArrow: <CustomNextArrow />,
 	};
+
+	useEffect(() => {
+		if (location.state?.scrollToProduct) {
+			productSectionRef.current?.scrollIntoView({ behavior: "smooth" });
+		}
+	}, [location, productSectionRef]);
 
 	useEffect(() => {
 		Promise.all([
@@ -267,15 +275,7 @@ export default function Homepage() {
 			</div>
 
 			{/* Hot Promotions Section */}
-			<div
-				// ref={
-				// 	keyword === "" && selectedBrand === "all"
-				// 		? productSectionRef
-				// 		: productSearchRef
-				// }
-				ref={productSectionRef}
-				className="mb-12"
-			>
+			<div ref={productSectionRef} className="mb-12">
 				<div
 					ref={productSearchRef}
 					className="mb-6 flex items-center justify-between"

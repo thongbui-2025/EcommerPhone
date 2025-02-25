@@ -106,7 +106,13 @@ const Header = ({
 								placeholder="Nhập thứ cần tìm..."
 								value={keyChange}
 								className="w-full pl-3 pr-3 p-1"
-								onChange={(e) => setKeyChange(e.target.value)}
+								onChange={(e) => {
+									const value = e.target.value;
+									setKeyChange(value);
+									if (value === "") {
+										setKeyword(""); // Reset keyword nếu input rỗng
+									}
+								}}
 								onKeyDown={handleKeyDown}
 							/>
 							{/* Nút Clear */}
@@ -179,7 +185,7 @@ const Header = ({
 									</Link>
 									<Link to="/login">
 										<button
-											className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+											className="block w-full text-left px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-gray-100"
 											onClick={handleLogout}
 										>
 											<LogOut className="inline-block mr-2 h-4 w-4" />

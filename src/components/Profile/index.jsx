@@ -75,17 +75,17 @@ const Profile = () => {
 	};
 
 	return (
-		<div className="max-w-2xl mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
+		<div className="max-w-2xl mx-auto mt-10 p-6 mb-8 bg-white rounded-lg shadow-md">
 			<h1 className="text-2xl font-bold mb-6">Thông tin cá nhân</h1>
 			<form onSubmit={handleSubmit}>
-				<div className="space-y-4">
+				<div className="space-y-5">
 					<div className="flex items-center">
 						<User className="w-6 h-6 mr-2" />
 						<label className="w-32">Tên đăng nhập:</label>
 						<input
 							type="text"
 							name="userName"
-							value={userInfo?.userName}
+							value={userInfo?.userName || ""}
 							onChange={handleInfoChange}
 							disabled={!isEditing}
 							className="flex-1 p-2 border rounded"
@@ -97,7 +97,7 @@ const Profile = () => {
 						<input
 							type="email"
 							name="email"
-							value={userInfo?.email}
+							value={userInfo?.email || ""}
 							onChange={handleInfoChange}
 							disabled={!isEditing}
 							className="flex-1 p-2 border rounded"
@@ -109,46 +109,19 @@ const Profile = () => {
 						<input
 							type="tel"
 							name="phoneNumber"
-							value={userInfo?.phoneNumber}
+							value={userInfo?.phoneNumber || ""}
 							onChange={handleInfoChange}
 							disabled={!isEditing}
 							className="flex-1 p-2 border rounded"
 						/>
 					</div>
-					{/* <div className="flex items-center">
-						<User className="w-6 h-6 mr-2" />
-						<label className="w-32">Giới tính:</label>
-						<select
-							name="gender"
-							value={userInfo.gender}
-							onChange={handleInfoChange}
-							disabled={!isEditing}
-							className="flex-1 p-2 border rounded"
-						>
-							<option value="Nam">Nam</option>
-							<option value="Nữ">Nữ</option>
-							<option value="Khác">Khác</option>
-						</select>
-					</div> */}
-					{/* <div className="flex items-center">
-						<Calendar className="w-6 h-6 mr-2" />
-						<label className="w-32">Ngày sinh:</label>
-						<input
-							type="date"
-							name="birthdate"
-							value={userInfo.birthdate}
-							onChange={handleInfoChange}
-							disabled={!isEditing}
-							className="flex-1 p-2 border rounded"
-						/>
-					</div> */}
 					<div className="flex items-center">
 						<MapPin className="w-6 h-6 mr-2" />
 						<label className="w-32">Địa chỉ:</label>
 						<input
 							type="text"
 							name="address"
-							value={userInfo?.address}
+							value={userInfo?.address || ""}
 							onChange={handleInfoChange}
 							disabled={!isEditing}
 							className="flex-1 p-2 border rounded"

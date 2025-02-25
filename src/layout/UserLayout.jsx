@@ -36,6 +36,10 @@ const UserLayout = () => {
 			productSearchRef.current?.scrollIntoView({ behavior: "smooth" });
 	};
 
+	const handleSmooth = () => {
+		productSectionRef.current?.scrollIntoView({ behavior: "smooth" });
+	};
+
 	return (
 		<div className="min-h-screen flex flex-col">
 			<Header
@@ -52,6 +56,7 @@ const UserLayout = () => {
 					productSectionRef,
 					productSearchRef,
 					keyword,
+					handleSmooth,
 				}}
 			/>
 			<Footer />

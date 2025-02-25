@@ -2,13 +2,16 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import ProductCard from "../ProductCard";
 import { ChevronDown } from "lucide-react";
+import { Link, useNavigate, useOutletContext } from "react-router";
 
 const FavoritePhone = () => {
 	const [productsWishlist, setProductsWishlist] = useState(null);
 	const [visibleCount, setVisibleCount] = useState(8);
 	const userId = localStorage.getItem("userId");
 
-	useEffect;
+	const { handleSmooth } = useOutletContext();
+
+	const navigate = useNavigate();
 
 	useEffect(() => {
 		Promise.all([
@@ -46,6 +49,13 @@ const FavoritePhone = () => {
 		setVisibleCount((prev) => prev + 8);
 	};
 
+	const handleNavigateSmooth = () => {
+		navigate("/");
+		setTimeout(() => {
+			handleSmooth();
+		}, 300);
+	};
+
 	return (
 		<div className="container mx-auto px-4 py-8">
 			{/* Hot Promotions Section */}
@@ -60,28 +70,45 @@ const FavoritePhone = () => {
 				</div>
 
 				{/* Price Filter Sidebar */}
-				<div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
-					{displayedProducts?.map((product, index) => (
-						<ProductCard
-							key={index}
-							product={product}
-							heart={false}
-						/>
-					))}
-				</div>
-				{productsWishlist?.length > visibleCount && (
-					<div className="text-center mt-8">
-						<button
-							onClick={handleShowMore}
-							className="inline-flex items-center gap-2 px-4 py-2 border rounded-md font-semibold hover:bg-gray-50 cursor-pointer"
+				{productsWishlist === "" ? (
+					<div>
+						<div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+							{displayedProducts?.map((product, index) => (
+								<ProductCard
+									key={index}
+									product={product}
+									heart={false}
+								/>
+							))}
+						</div>
+						{productsWishlist?.length > visibleCount && (
+							<div className="text-center mt-8">
+								<button
+									onClick={handleShowMore}
+									className="inline-flex items-center gap-2 px-4 py-2 border rounded-md font-semibold hover:bg-gray-50 cursor-pointer"
+								>
+									Xem thêm
+									<span className="text-[#6DD5ED]">
+										{productsWishlist.length - visibleCount}{" "}
+										sản phẩm
+									</span>
+									<ChevronDown className="w-4 h-4 text-[#6DD5ED]" />
+								</button>
+							</div>
+						)}
+					</div>
+				) : (
+					<div className="text-center text-xl text-[#3ea8c0] font-semibold mt-10">
+						Bạn chưa có sản phẩm yêu thích nào! 💖
+						<br />
+						<Link
+							to="#"
+							onClick={handleNavigateSmooth}
+							className="text-[#3ea8c0] underline hover:text-[#F92F60]"
 						>
-							Xem thêm
-							<span className="text-[#6DD5ED]">
-								{productsWishlist.length - visibleCount} sản
-								phẩm
-							</span>
-							<ChevronDown className="w-4 h-4 text-[#6DD5ED]" />
-						</button>
+							Khám phá ngay
+						</Link>{" "}
+						và thêm vào danh sách nhé!
 					</div>
 				)}
 			</div>
