@@ -38,9 +38,10 @@ export default function Homepage() {
 	const [products, setProducts] = useState([]);
 	const [brands, setBrands] = useState([]);
 	const [selectedPriceRange, setSelectedPriceRange] = useState("all");
-	const [showAll, setShowAll] = useState(false);
+	// const [showAll, setShowAll] = useState(false);
 	const [sortOrder, setSortOrder] = useState("default");
-	const [seachProducts, setSeachProducts] = useState([]);
+	const [searchProducts, setSearchProducts] = useState([]);
+	const [visibleCount, setVisibleCount] = useState(8);
 
 	const { selectedBrand, productSectionRef, productSearchRef, keyword } =
 		useOutletContext();
@@ -128,7 +129,7 @@ export default function Homepage() {
 						),
 					}));
 
-					setSeachProducts(mergedProducts);
+					setSearchProducts(mergedProducts);
 				});
 			})
 			.catch((err) => {
@@ -136,18 +137,18 @@ export default function Homepage() {
 			});
 	}, [keyword]);
 
-	console.log("searchProducts", seachProducts);
+	console.log("searchProducts", searchProducts);
 
 	const filterProducts = (products) => {
 		let filtered = [...products];
 
 		// Lọc theo thương hiệu
-		if (selectedBrand !== "all") {
-			const brandId = brands.find(
-				(b) => b?.name?.toLowerCase() === selectedBrand?.toLowerCase()
-			)?.id;
+		if (selectedBrand !== 0) {
+			// const brandId = brands.find(
+			// 	(b) => b?.name?.toLowerCase() === selectedBrand?.toLowerCase()
+			// )?.id;
 			filtered = filtered.filter(
-				(product) => product.brandId === brandId
+				(product) => product.brandId === selectedBrand
 			);
 		}
 
@@ -194,10 +195,23 @@ export default function Homepage() {
 		return filtered;
 	};
 
-	const filteredProducts = filterProducts(keyword ? seachProducts : products);
-	const displayedProducts = showAll
-		? filteredProducts
-		: filteredProducts.slice(0, 8);
+	const baseProducts = keyword ? searchProducts : products;
+
+	console.log("baseProducts", baseProducts);
+
+	const filteredProducts = filterProducts(
+		baseProducts.filter(
+			(product) => !selectedBrand || product.brandId === selectedBrand
+		)
+	);
+
+	console.log("filteredProducts", filteredProducts);
+
+	const displayedProducts = filteredProducts.slice(0, visibleCount);
+
+	const handleShowMore = () => {
+		setVisibleCount((prev) => prev + 8);
+	};
 
 	return (
 		<div className="container mx-auto px-4 py-8">
@@ -222,13 +236,28 @@ export default function Homepage() {
 			</div>
 
 			{/* Hot Promotions Section */}
-			<div ref={productSectionRef || productSearchRef} className="mb-12">
-				<div className="mb-6 flex items-center justify-between">
+			<div
+				// ref={
+				// 	keyword === "" && selectedBrand === "all"
+				// 		? productSectionRef
+				// 		: productSearchRef
+				// }
+				ref={productSectionRef}
+				className="mb-12"
+			>
+				<div
+					ref={productSearchRef}
+					className="mb-6 flex items-center justify-between"
+				>
 					<div className="flex items-center">
 						<div className="mr-2 h-6 w-1 bg-red-600"></div>
-						<h2 className="text-2xl font-bold text-red-600">
+						<h2 className="text-2xl font-bold text-red-600 mr-6">
 							SẢN PHẨM
 						</h2>
+						<p className="text-2xl font-bold">
+							{brands.find((b) => b?.id === selectedBrand)?.name}{" "}
+							({filteredProducts.length} sản phẩm)
+						</p>
 					</div>
 					<div className="flex gap-4">
 						<select
@@ -266,14 +295,18 @@ export default function Homepage() {
 						<ProductCard key={index} {...product} />
 					))}
 				</div>
-				{filteredProducts.length > 8 && !showAll && (
+				{filteredProducts.length > visibleCount && (
 					<div className="text-center mt-8">
 						<button
-							onClick={() => setShowAll(true)}
-							className="inline-flex items-center gap-2 px-4 py-2 border rounded-md hover:bg-gray-50 cursor-pointer"
+							onClick={handleShowMore}
+							className="inline-flex items-center gap-2 px-4 py-2 border rounded-md font-semibold hover:bg-gray-50 cursor-pointer"
 						>
 							Xem thêm
-							<ChevronDown className="w-4 h-4" />
+							<span className="text-[#6DD5ED]">
+								{filteredProducts.length - visibleCount} sản
+								phẩm
+							</span>
+							<ChevronDown className="w-4 h-4 text-[#6DD5ED]" />
 						</button>
 					</div>
 				)}

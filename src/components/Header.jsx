@@ -1,15 +1,22 @@
 import axios from "axios";
 import { ShoppingBag, Search, User, Clock, LogOut, Heart } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router";
 import { logoutUser } from "../utils/auth";
 
-const Header = ({ setSelectedBrand, setKeyword, keyChange, setKeyChange }) => {
+const Header = ({
+	setSelectedBrand,
+	setKeyword,
+	keyChange,
+	setKeyChange,
+	productSearchRef,
+}) => {
 	const [brands, setBrands] = useState([]);
 	const [username, setUsername] = useState("");
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+	const navigate = useNavigate();
 
-	const searchRef = useRef(null);
+	// const searchRef = useRef(null);
 
 	useEffect(() => {
 		axios.get("Brands").then((response) => setBrands(response.data));
@@ -22,34 +29,49 @@ const Header = ({ setSelectedBrand, setKeyword, keyChange, setKeyChange }) => {
 		}
 	}, []);
 
-	useEffect(() => {
-		const handleClickOutside = (e) => {
-			if (searchRef.current && !searchRef.current.contains(e.target)) {
-				setKeyChange("");
-			}
-		};
-		document.addEventListener("mousedown", handleClickOutside);
-		return () => {
-			document.removeEventListener("mousedown", handleClickOutside);
-		};
-	});
+	// useEffect(() => {
+	// 	const handleClickOutside = (e) => {
+	// 		if (searchRef.current && !searchRef.current.contains(e.target)) {
+	// 			setKeyChange("");
+	// 		}
+	// 	};
+	// 	document.addEventListener("mousedown", handleClickOutside);
+	// 	return () => {
+	// 		document.removeEventListener("mousedown", handleClickOutside);
+	// 	};
+	// });
 
 	const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
 
+	// Xử lý khi nhấn Search hoặc Enter
+	const handleSearch = () => {
+		if (keyChange.trim() !== "") {
+			setKeyword(keyChange); // Cập nhật keyword
+		}
+	};
+
+	// Xử lý khi nhấn Enter
 	const handleKeyDown = (e) => {
-		if (e.key == "Enter") {
+		if (e.key === "Enter") {
 			handleSearch();
 		}
 	};
 
-	const handleSearch = () => {
-		if (keyChange.trim() !== "") {
-			setKeyword(keyChange);
-		}
+	// Hàm clear input và reset keyword
+	const handleClear = () => {
+		setKeyChange("");
+		setKeyword("");
+		// Scroll về lại vị trí sản phẩm
+		productSearchRef.current?.scrollIntoView({ behavior: "smooth" });
 	};
 
 	const handleLogout = () => {
 		logoutUser();
+	};
+
+	const handleClickAll = () => {
+		setSelectedBrand(0, true);
+		navigate("/");
 	};
 
 	return (
@@ -62,7 +84,7 @@ const Header = ({ setSelectedBrand, setKeyword, keyChange, setKeyChange }) => {
 						to="/"
 						onClick={() => {
 							setKeyword("");
-							setSelectedBrand("all");
+							setSelectedBrand(0, false);
 						}}
 						className="flex items-center"
 					>
@@ -75,18 +97,27 @@ const Header = ({ setSelectedBrand, setKeyword, keyChange, setKeyChange }) => {
 					</Link>
 					{/* Search Bar */}
 					<div
-						ref={searchRef}
+						// ref={searchRef}
 						className="hidden md:flex flex-1 max-w-xl mx-8 items-center gap-4"
 					>
 						<div className="relative w-full bg-white rounded">
 							<input
-								type="search"
+								type=""
 								placeholder="Nhập thứ cần tìm..."
 								value={keyChange}
 								className="w-full pl-3 pr-3 p-1"
 								onChange={(e) => setKeyChange(e.target.value)}
 								onKeyDown={handleKeyDown}
 							/>
+							{/* Nút Clear */}
+							{keyChange && (
+								<button
+									className="absolute right-5 top-1/2 transform -translate-y-1/2 text-black"
+									onClick={handleClear}
+								>
+									✕
+								</button>
+							)}
 						</div>
 						<div>
 							<button
@@ -168,10 +199,21 @@ const Header = ({ setSelectedBrand, setKeyword, keyChange, setKeyChange }) => {
 			{/* Navigation */}
 			<nav className="bg-gradient-to-r from-[#2193B0] to-[#6DD5ED] pl-15">
 				<ul className="flex items-center justify-start space-x-8 px-4 py-3 text-[#333333] font-semibold">
+					<li>
+						<button
+							onClick={handleClickAll}
+							className="hover:opacity-80 cursor-pointer"
+						>
+							All
+						</button>
+					</li>
 					{brands.map((brand) => (
 						<li key={brand.id}>
 							<button
-								onClick={() => setSelectedBrand(brand.name)}
+								onClick={() => {
+									setSelectedBrand(brand.id);
+									navigate("/");
+								}}
 								className="hover:opacity-80 cursor-pointer"
 							>
 								{brand.name}
