@@ -15,8 +15,8 @@ const ProductCard = ({ product, isFavorite, toggleFavorite, heart }) => {
 
 	return (
 		<Link to={`/product/${product.id}`}>
-			<div className="mx-2 rounded-lg bg-white p-4 shadow-md hover:opacity-80 cursor-pointer">
-				<div className="relative flex justify-center items-center">
+			<div className="group mx-2 rounded-lg bg-white p-4 shadow-md hover:opacity-90 cursor-pointer">
+				<div className="relative flex justify-center items-center overflow-hidden">
 					<div className="w-[18vw] md:h-[45vh] h-[35vh] rounded-lg overflow-hidden">
 						<img
 							src={
@@ -25,7 +25,7 @@ const ProductCard = ({ product, isFavorite, toggleFavorite, heart }) => {
 									: "/productNoImage.svg"
 							}
 							alt={product?.name}
-							className="w-[18vw] md:h-[45vh] h-[35vh] rounded-lg object-contain"
+							className="w-[18vw] md:h-[45vh] h-[35vh] rounded-lg object-contain transform transition-all duration-500 group-hover:-translate-y-2 group-hover:scale-90"
 						/>
 					</div>
 					<div className="absolute top-0 right-0">

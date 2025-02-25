@@ -41,7 +41,7 @@ const UserLayout = () => {
 	};
 
 	return (
-		<div className="min-h-screen flex flex-col">
+		<div className="min-h-screen flex flex-col overflow-x-hidden">
 			<Header
 				setSelectedBrand={handleBrandSelect}
 				setKeyword={handleSearch}
@@ -59,7 +59,7 @@ const UserLayout = () => {
 					handleSmooth,
 				}}
 			/>
-			<Footer />
+			<Footer className="w-full max-w-screen-xl mx-auto" />
 		</div>
 	);
 };

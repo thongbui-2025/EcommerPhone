@@ -70,7 +70,7 @@ const FavoritePhone = () => {
 				</div>
 
 				{/* Price Filter Sidebar */}
-				{productsWishlist === "" ? (
+				{productsWishlist?.length > 0 ? (
 					<div>
 						<div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
 							{displayedProducts?.map((product, index) => (

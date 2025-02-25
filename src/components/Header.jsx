@@ -1,6 +1,6 @@
 import axios from "axios";
 import { ShoppingBag, Search, User, Clock, LogOut, Heart } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router";
 import { logoutUser } from "../utils/auth";
 
@@ -16,7 +16,7 @@ const Header = ({
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 	const navigate = useNavigate();
 
-	// const searchRef = useRef(null);
+	const dropdownRef = useRef(null);
 
 	useEffect(() => {
 		axios.get("Brands").then((response) => setBrands(response.data));
@@ -29,19 +29,24 @@ const Header = ({
 		}
 	}, []);
 
-	// useEffect(() => {
-	// 	const handleClickOutside = (e) => {
-	// 		if (searchRef.current && !searchRef.current.contains(e.target)) {
-	// 			setKeyChange("");
-	// 		}
-	// 	};
-	// 	document.addEventListener("mousedown", handleClickOutside);
-	// 	return () => {
-	// 		document.removeEventListener("mousedown", handleClickOutside);
-	// 	};
-	// });
-
 	const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
+	// Đóng dropdown khi click ra ngoài
+	useEffect(() => {
+		const handleClickOutside = (event) => {
+			if (
+				dropdownRef.current &&
+				!dropdownRef.current.contains(event.target)
+			) {
+				setIsDropdownOpen(false);
+			}
+		};
+
+		document.addEventListener("mousedown", handleClickOutside);
+
+		return () => {
+			document.removeEventListener("mousedown", handleClickOutside);
+		};
+	}, []);
 
 	// Xử lý khi nhấn Search hoặc Enter
 	const handleSearch = () => {
@@ -75,9 +80,12 @@ const Header = ({
 	};
 
 	return (
-		<header className=" w-full max-lg:w-[1024px]">
+		<header ref={dropdownRef} className="w-full max-w-screen-2xl mx-auto">
 			{/* <div className=""> */}
-			<div className="flex items-center justify-between bg-[#333333] px-6">
+			<div
+				ref={dropdownRef}
+				className="flex items-center justify-between bg-[#333333] px-6"
+			>
 				<div className="flex items-center gap-1">
 					{/* Logo */}
 					<Link
@@ -96,10 +104,7 @@ const Header = ({
 						/>
 					</Link>
 					{/* Search Bar */}
-					<div
-						// ref={searchRef}
-						className="hidden md:flex flex-1 max-w-xl mx-8 items-center gap-4"
-					>
+					<div className="hidden md:flex flex-1 max-w-xl mx-8 items-center gap-4">
 						<div className="relative w-full bg-white rounded">
 							<input
 								type=""

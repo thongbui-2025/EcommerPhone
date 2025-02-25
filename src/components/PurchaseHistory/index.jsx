@@ -101,7 +101,7 @@ const PurchaseHistory = () => {
 					</div>
 				</div>
 
-				{orderDetail === "" ? (
+				{orderDetail?.length > 0 ? (
 					<div className="max-w-7xl mx-auto space-y-4 mt-3">
 						{orderDetail?.map((order) => (
 							<div
