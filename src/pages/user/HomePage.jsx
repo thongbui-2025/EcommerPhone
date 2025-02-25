@@ -38,13 +38,17 @@ export default function Homepage() {
 	const [products, setProducts] = useState([]);
 	const [brands, setBrands] = useState([]);
 	const [selectedPriceRange, setSelectedPriceRange] = useState("all");
-	// const [showAll, setShowAll] = useState(false);
 	const [sortOrder, setSortOrder] = useState("default");
 	const [searchProducts, setSearchProducts] = useState([]);
 	const [visibleCount, setVisibleCount] = useState(8);
 
+	// Sản phẩm yêu thích
+	const [isFavorite, setIsFavorite] = useState([]);
+
 	const { selectedBrand, productSectionRef, productSearchRef, keyword } =
 		useOutletContext();
+
+	const userId = localStorage.getItem("userId");
 
 	const bannerSettings = {
 		dots: true,
@@ -107,22 +111,14 @@ export default function Homepage() {
 					const allSkus = skusRes.data;
 					const allImages = imagesRes.data;
 
-					// Bước 3: Chuyển SKU & Images thành Map để tìm kiếm nhanh
-					// const skuMap = allSkus.reduce((acc, sku) => {
-					// 	acc[sku.productId] = sku;
-					// 	return acc;
-					// }, {});
-
 					const imageMap = allImages.reduce((acc, image) => {
 						acc[image.productId] = image;
 						return acc;
 					}, {});
 
-					// Bước 5: Merge dữ liệu sản phẩm
+					// Bước 3: Merge dữ liệu sản phẩm
 					const mergedProducts = searchProduct.map((product) => ({
 						...product,
-						// skus: skuMap[product.id] || null,
-						// images: imageMap[product.id] || null,
 						images: imageMap[product.id] || {},
 						skus: allSkus.filter(
 							(sku) => sku.productId === product.id
@@ -137,16 +133,29 @@ export default function Homepage() {
 			});
 	}, [keyword]);
 
-	console.log("searchProducts", searchProducts);
+	// console.log("searchProducts", searchProducts);
+
+	// Logic save state Favorites
+	useEffect(() => {
+		const fetchFavorites = async () => {
+			try {
+				const response = await axios.get(
+					`/Products/wishlist/${userId}`
+				);
+				setIsFavorite(response.data); // chứa danh sách yêu thích từ server
+			} catch (error) {
+				console.error("Lỗi khi tải danh sách yêu thích:", error);
+			}
+		};
+
+		fetchFavorites();
+	}, [userId]);
 
 	const filterProducts = (products) => {
 		let filtered = [...products];
 
 		// Lọc theo thương hiệu
 		if (selectedBrand !== 0) {
-			// const brandId = brands.find(
-			// 	(b) => b?.name?.toLowerCase() === selectedBrand?.toLowerCase()
-			// )?.id;
 			filtered = filtered.filter(
 				(product) => product.brandId === selectedBrand
 			);
@@ -197,7 +206,7 @@ export default function Homepage() {
 
 	const baseProducts = keyword ? searchProducts : products;
 
-	console.log("baseProducts", baseProducts);
+	// console.log("baseProducts", baseProducts);
 
 	const filteredProducts = filterProducts(
 		baseProducts.filter(
@@ -205,12 +214,34 @@ export default function Homepage() {
 		)
 	);
 
-	console.log("filteredProducts", filteredProducts);
+	// console.log("filteredProducts", filteredProducts);
 
 	const displayedProducts = filteredProducts.slice(0, visibleCount);
 
 	const handleShowMore = () => {
 		setVisibleCount((prev) => prev + 8);
+	};
+
+	// Handle sản phẩm tym
+	const toggleFavorite = async (product) => {
+		try {
+			await axios.post(
+				`/Products/wishlist?userId=${userId}&productId=${product.id}`
+			);
+
+			const isFav = isFavorite.some((item) => item.id === product.id);
+			if (isFav) {
+				setIsFavorite((prev) =>
+					prev.filter((item) => item.id !== product.id)
+				);
+				console.log("Đã xóa khỏi danh sách yêu thích 💔");
+			} else {
+				setIsFavorite((prev) => [...prev, product]);
+				console.log("Đã thêm vào danh sách yêu thích ❤️");
+			}
+		} catch (error) {
+			console.error("Lỗi khi gửi yêu cầu yêu thích:", error);
+		}
 	};
 
 	return (
@@ -292,7 +323,13 @@ export default function Homepage() {
 				{/* Price Filter Sidebar */}
 				<div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
 					{displayedProducts.map((product, index) => (
-						<ProductCard key={index} {...product} />
+						<ProductCard
+							key={index}
+							product={product}
+							isFavorite={isFavorite}
+							toggleFavorite={toggleFavorite}
+							heart={true}
+						/>
 					))}
 				</div>
 				{filteredProducts.length > visibleCount && (

@@ -30,12 +30,7 @@ const UserLayout = () => {
 		}, 100);
 	};
 
-	console.log("selectedBrand", selectedBrand);
-	console.log("keyword", keyword);
-
 	const handleSearch = (keywords) => {
-		console.log("keywords", keywords);
-
 		setKeyword(keywords);
 		if (keywords !== "")
 			productSearchRef.current?.scrollIntoView({ behavior: "smooth" });
