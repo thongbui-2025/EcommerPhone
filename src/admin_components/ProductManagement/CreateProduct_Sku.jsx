@@ -92,8 +92,8 @@ const CreateProduct_Sku = ({ onBack, onCreate }) => {
 
 	return (
 		<div className="bg-white rounded-lg mt-5 p-5">
-			<div className="bg-blue-500 text-white p-4 rounded-t-lg">
-				Trang chủ / Tạo sản phẩm
+			<div className="bg-blue-400 text-white p-4 rounded-t-lg">
+				Trang chủ / Sản phẩm / Tạo sản phẩm
 			</div>
 
 			<div className="p-6 shadow">

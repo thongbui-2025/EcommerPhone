@@ -321,7 +321,7 @@ export default function Homepage() {
 				</div>
 
 				{/* Price Filter Sidebar */}
-				<div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+				<div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 space-y-8">
 					{displayedProducts.map((product, index) => (
 						<ProductCard
 							key={index}

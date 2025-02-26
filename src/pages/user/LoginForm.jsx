@@ -29,7 +29,7 @@ const LoginForm = () => {
 				password: formData.password,
 			});
 
-			console.log(response);
+			// console.log(response);
 
 			// Nếu API trả về token hợp lệ
 			if (response.data.token) {

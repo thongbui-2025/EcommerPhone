@@ -6,77 +6,85 @@ import { Link, useNavigate, useOutletContext } from "react-router";
 
 const PurchaseHistory = () => {
 	const [orderDetail, setOrderDetails] = useState(null);
+	const [isLoadingOrderDetail, setIsLoadingOrderDetail] = useState(false); // Loading khi state  chưa update
+
 	const userId = localStorage.getItem("userId");
 	const navigate = useNavigate();
 
 	const { handleSmooth } = useOutletContext();
 
 	useEffect(() => {
+		setIsLoadingOrderDetail(true);
 		Promise.all([
 			axios.get(`/Orders/getByUser/${userId}`),
 			axios.get("/Order_Item"),
 			axios.get("/Product_SKU"),
 			axios.get("/Products"),
 			axios.get("/Product_Image"),
-		]).then(([orderRes, orderItemRes, skusRes, productsRes, imagesRes]) => {
-			const orders = orderRes.data;
-			// console.log("orders", orders);
-			const orderItems = orderItemRes.data;
-			// console.log("orderItems", orderItems);
-			const skus = skusRes.data;
-			// console.log("skus", skus);
-			const products = productsRes.data;
-			// console.log("products", products);
-			const images = imagesRes.data;
-			// console.log("images", images);
+		])
+			.then(
+				([orderRes, orderItemRes, skusRes, productsRes, imagesRes]) => {
+					const orders = orderRes.data;
+					// console.log("orders", orders);
+					const orderItems = orderItemRes.data;
+					// console.log("orderItems", orderItems);
+					const skus = skusRes.data;
+					// console.log("skus", skus);
+					const products = productsRes.data;
+					// console.log("products", products);
+					const images = imagesRes.data;
+					// console.log("images", images);
 
-			// Chuyển đổi dữ liệu thành object map để tra cứu nhanh
-			const skuMap = skus.reduce((acc, sku) => {
-				acc[sku.id] = sku;
-				return acc;
-			}, {});
-			// console.log("skuMap", skuMap);
+					// Chuyển đổi dữ liệu thành object map để tra cứu nhanh
+					const skuMap = skus.reduce((acc, sku) => {
+						acc[sku.id] = sku;
+						return acc;
+					}, {});
+					// console.log("skuMap", skuMap);
 
-			const productMap = products.reduce((acc, product) => {
-				acc[product.id] = product;
-				return acc;
-			}, {});
-			// console.log("productMap", productMap);
+					const productMap = products.reduce((acc, product) => {
+						acc[product.id] = product;
+						return acc;
+					}, {});
+					// console.log("productMap", productMap);
 
-			const imageMap = images.reduce((acc, image) => {
-				acc[image.productId] = image;
-				return acc;
-			}, {});
-			// console.log("imageMap", imageMap);
+					const imageMap = images.reduce((acc, image) => {
+						acc[image.productId] = image;
+						return acc;
+					}, {});
+					// console.log("imageMap", imageMap);
 
-			// Nhóm các orderItems theo orderId
-			const ordersWithDetails = orders.map((order) => {
-				const items = orderItems
-					.filter((item) => item.orderId === order.id)
-					.map((item) => {
-						const sku = skuMap[item.product_SKUId] || {};
-						// console.log(sku);
-						const product =
-							productMap[sku.productId || sku.id] || {};
-						// console.log(product);
-						const image = imageMap[product.id] || {};
-						// console.log(image);
+					// Nhóm các orderItems theo orderId
+					const ordersWithDetails = orders.map((order) => {
+						const items = orderItems
+							.filter((item) => item.orderId === order.id)
+							.map((item) => {
+								const sku = skuMap[item.product_SKUId] || {};
+								// console.log(sku);
+								const product =
+									productMap[sku.productId || sku.id] || {};
+								// console.log(product);
+								const image = imageMap[product.id] || {};
+								// console.log(image);
+
+								return {
+									...item,
+									sku,
+									product,
+									image,
+								};
+							});
 
 						return {
-							...item,
-							sku,
-							product,
-							image,
+							...order,
+							orderItems: items,
 						};
 					});
-
-				return {
-					...order,
-					orderItems: items,
-				};
-			});
-			setOrderDetails(ordersWithDetails);
-		});
+					setOrderDetails(ordersWithDetails);
+				}
+			)
+			.catch((error) => console.error("Lỗi khi lấy dữ liệu:", error))
+			.finally(() => setIsLoadingOrderDetail(false)); //
 	}, [userId]);
 
 	console.log("orderDetail", orderDetail);
@@ -101,7 +109,11 @@ const PurchaseHistory = () => {
 					</div>
 				</div>
 
-				{orderDetail?.length > 0 ? (
+				{isLoadingOrderDetail ? (
+					<div className="text-center text-xl text-[#3ea8c0] font-semibold mt-10">
+						Đang tải dữ liệu... ⏳
+					</div>
+				) : orderDetail?.length > 0 ? (
 					<div className="max-w-7xl mx-auto space-y-4 mt-3">
 						{orderDetail?.map((order) => (
 							<div

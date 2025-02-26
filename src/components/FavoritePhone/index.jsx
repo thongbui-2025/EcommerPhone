@@ -5,8 +5,10 @@ import { ChevronDown } from "lucide-react";
 import { Link, useNavigate, useOutletContext } from "react-router";
 
 const FavoritePhone = () => {
-	const [productsWishlist, setProductsWishlist] = useState(null);
+	const [productsWishlist, setProductsWishlist] = useState([]);
 	const [visibleCount, setVisibleCount] = useState(8);
+	const [isLoadingWishlist, setIsLoadingWishlist] = useState(false); // Loading khi state  chưa update
+
 	const userId = localStorage.getItem("userId");
 
 	const { handleSmooth } = useOutletContext();
@@ -14,6 +16,7 @@ const FavoritePhone = () => {
 	const navigate = useNavigate();
 
 	useEffect(() => {
+		setIsLoadingWishlist(true);
 		Promise.all([
 			axios.get(`/Products/wishlist/${userId}`),
 			axios.get("/Product_Image"),
@@ -38,7 +41,8 @@ const FavoritePhone = () => {
 				}));
 				setProductsWishlist(mergedProducts);
 			})
-			.catch((error) => console.error("Lỗi khi lấy dữ liệu:", error));
+			.catch((error) => console.error("Lỗi khi lấy dữ liệu:", error))
+			.finally(() => setIsLoadingWishlist(false));
 	}, [userId]);
 
 	console.log("productsWishlist", productsWishlist);
@@ -70,7 +74,11 @@ const FavoritePhone = () => {
 				</div>
 
 				{/* Price Filter Sidebar */}
-				{productsWishlist?.length > 0 ? (
+				{isLoadingWishlist ? (
+					<div className="text-center text-xl text-[#3ea8c0] font-semibold mt-10">
+						Đang tải dữ liệu... ⏳
+					</div>
+				) : productsWishlist?.length > 0 ? (
 					<div>
 						<div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
 							{displayedProducts?.map((product, index) => (

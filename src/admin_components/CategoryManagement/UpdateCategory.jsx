@@ -30,13 +30,13 @@ const UpdateCategory = ({ category, onBack, onUpdate }) => {
 	};
 
 	return (
-		<div className="bg-white rounded-lg shadow">
+		<div className="bg-white rounded-lg mt-5 p-5">
 			{/* Breadcrumb */}
 			<div className="bg-blue-400 text-white p-4 rounded-t-lg">
 				Trang chủ / Danh mục / Cập nhật danh mục
 			</div>
 
-			<div className="p-6">
+			<div className="p-6 shadow">
 				{/* Back Button */}
 				<button
 					onClick={onBack}

@@ -201,6 +201,8 @@ const ProductManagement = () => {
 
 	const handleProductUpdate = (updatedProduct) => {
 		const token = localStorage.getItem("token");
+		console.log("updatedProduct", updatedProduct);
+
 		axios
 			.put(`/Products/${updatedProduct.id}`, updatedProduct, {
 				headers: {
