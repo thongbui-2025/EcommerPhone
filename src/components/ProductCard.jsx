@@ -8,6 +8,7 @@ import {
 } from "../utils/getLowestPrice";
 
 const ProductCard = ({ product, isFavorite, toggleFavorite, heart }) => {
+	const userId = localStorage.getItem("userId");
 	// console.log(images?.imageName);
 	// console.log(skus);
 
@@ -29,7 +30,7 @@ const ProductCard = ({ product, isFavorite, toggleFavorite, heart }) => {
 						/>
 					</div>
 					<div className="absolute top-0 right-0">
-						{heart && (
+						{userId && heart && (
 							<button
 								onClick={(e) => {
 									e.preventDefault();

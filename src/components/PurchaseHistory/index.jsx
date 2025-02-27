@@ -3,6 +3,7 @@ import { Store, HelpCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { formatPrice } from "../../utils/formatPrice";
 import { Link, useNavigate, useOutletContext } from "react-router";
+import Loading from "../Loading";
 
 const PurchaseHistory = () => {
 	const [orderDetail, setOrderDetails] = useState(null);
@@ -110,9 +111,7 @@ const PurchaseHistory = () => {
 				</div>
 
 				{isLoadingOrderDetail ? (
-					<div className="text-center text-xl text-[#3ea8c0] font-semibold mt-10">
-						Đang tải dữ liệu... ⏳
-					</div>
+					<Loading />
 				) : orderDetail?.length > 0 ? (
 					<div className="max-w-7xl mx-auto space-y-4 mt-3">
 						{orderDetail?.map((order) => (

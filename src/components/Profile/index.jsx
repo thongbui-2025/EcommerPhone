@@ -10,6 +10,7 @@ import {
 	Save,
 } from "lucide-react";
 import axios from "axios";
+import Loading from "../Loading";
 
 const Profile = () => {
 	const [isEditing, setIsEditing] = useState(false);
@@ -44,11 +45,7 @@ const Profile = () => {
 	}, []);
 
 	if (loading) {
-		return (
-			<div className="flex justify-center items-center h-screen">
-				<div className="animate-spin rounded-full h-16 w-16 border-t-4 border-[#52cceb]"></div>
-			</div>
-		);
+		<Loading />;
 	}
 
 	// console.log(userInfo);

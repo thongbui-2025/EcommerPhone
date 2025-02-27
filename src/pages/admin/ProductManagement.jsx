@@ -199,55 +199,69 @@ const ProductManagement = () => {
 			);
 	};
 
-	const handleProductUpdate = (updatedProduct) => {
-		const token = localStorage.getItem("token");
-		console.log("updatedProduct", updatedProduct);
+	const handleProductUpdate = async (updatedProduct, imageData) => {
+		try {
+			const token = localStorage.getItem("token");
+			console.log("updatedProduct", updatedProduct);
+			console.log("productImage", imageData);
 
-		axios
-			.put(`/Products/${updatedProduct.id}`, updatedProduct, {
+			// Update the product
+			await axios.put(`/Products/${updatedProduct.id}`, updatedProduct, {
 				headers: {
 					Authorization: `Bearer ${token}`,
 					"Content-Type": "application/json",
 				},
-			})
-			.then(() => {
-				setProducts((prevProducts) =>
-					prevProducts?.map((product) =>
-						product.id === updatedProduct.id
-							? { ...product, ...updatedProduct }
-							: product
-					)
-				);
-				// setProductToUpdate(null);
+			});
+			setProducts((prevProducts) =>
+				prevProducts?.map((product) =>
+					product.id === updatedProduct.id
+						? { ...product, ...updatedProduct }
+						: product
+				)
+			);
+
+			// ⭐ Kiểm tra nếu không có ảnh mới thì dừng tại đây
+			if (
+				!imageData?.images ||
+				(Array.isArray(imageData?.images) &&
+					imageData?.images.length === 0)
+			) {
+				console.log("Không có ảnh mới, bỏ qua cập nhật ảnh!");
+				return;
+			}
+
+			// Update Image
+			const formData = new FormData();
+			formData.append("id", imageData?.id || "");
+			formData.append("images", imageData?.images); // Kiểm tra key ảnh đúng chưa
+
+			for (let pair of formData.entries()) {
+				console.log(pair[0], pair[1]);
+			}
+
+			await axios.put(`/Product_Image/${imageData.id}`, formData, {
+				headers: {
+					Authorization: `Bearer ${token}`,
+					"Content-Type": "multipart/form-data",
+				},
 			});
 
-		// const formData = new FormData();
-		// formData.append("images", imageData.productImages[0]); // Kiểm tra key ảnh đúng chưa
+			// Lấy ảnh mới sau khi cập nhật
+			const response = await axios.get(`/Product_Image/${imageData.id}`);
+			console.log("newImage", response.data);
+			const newImage = response.data;
 
-		axios
-			.put(
-				`/Product_Image/${updatedProduct?.images?.id}`,
-				updatedProduct?.images,
-				{
-					headers: {
-						Authorization: `Bearer ${token}`,
-						"Content-Type": "application/json",
-					},
-				}
-			)
-			.then(() => {
-				setProducts((prevProducts) =>
-					prevProducts?.map((product) =>
-						product.id === updatedProduct?.images?.productId
-							? {
-									...product,
-									images: updatedProduct?.images?.imageName,
-							  }
-							: product
-					)
-				);
-				setProductToUpdate(null);
-			});
+			// Cập nhật state với ảnh mới
+			setProducts((prevProducts) =>
+				prevProducts.map((product) =>
+					product.id === updatedProduct.id
+						? { ...product, images: newImage }
+						: product
+				)
+			);
+		} catch (error) {
+			console.error("Lỗi khi cập nhật sản phẩm:", error);
+		}
 	};
 
 	const handleDeleteClick = (product) => {

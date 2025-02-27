@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import axios from "axios";
 
-const UpdateProduct = ({ product, onBack, onUpdate }) => {
+const UpdateProduct_Sku = ({ product, onBack, onUpdate }) => {
 	console.log(product);
 
 	const [productData, setProductData] = useState({
@@ -312,4 +312,4 @@ const UpdateProduct = ({ product, onBack, onUpdate }) => {
 	);
 };
 
-export default UpdateProduct;
+export default UpdateProduct_Sku;

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import ProductCard from "../ProductCard";
 import { ChevronDown } from "lucide-react";
 import { Link, useNavigate, useOutletContext } from "react-router";
+import Loading from "../Loading";
 
 const FavoritePhone = () => {
 	const [productsWishlist, setProductsWishlist] = useState([]);
@@ -75,9 +76,7 @@ const FavoritePhone = () => {
 
 				{/* Price Filter Sidebar */}
 				{isLoadingWishlist ? (
-					<div className="text-center text-xl text-[#3ea8c0] font-semibold mt-10">
-						Đang tải dữ liệu... ⏳
-					</div>
+					<Loading />
 				) : productsWishlist?.length > 0 ? (
 					<div>
 						<div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">

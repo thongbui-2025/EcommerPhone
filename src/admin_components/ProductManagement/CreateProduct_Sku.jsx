@@ -16,7 +16,6 @@ const CreateProduct_Sku = ({ onBack, onCreate }) => {
 		isAvailable: true,
 		createdAt: new Date().toISOString(),
 		lastUpdatedAt: new Date().toISOString(),
-		// images: "",
 		image: null,
 	});
 	// const [previewImages, setPreviewImages] = useState([]); // State để preview ảnh
@@ -36,7 +35,6 @@ const CreateProduct_Sku = ({ onBack, onCreate }) => {
 		const file = e.target.files[0];
 		setSkuData((prev) => ({
 			...prev,
-			// images: [...prev.images, ...files],
 			image: file,
 		}));
 
@@ -49,7 +47,6 @@ const CreateProduct_Sku = ({ onBack, onCreate }) => {
 		// Xóa ảnh khỏi cả skuData và preview
 		setSkuData((prev) => ({
 			...prev,
-			// images: prev.images.filter((_, i) => i !== index),
 			image: null,
 		}));
 		// Reset input file
@@ -74,11 +71,6 @@ const CreateProduct_Sku = ({ onBack, onCreate }) => {
 				console.log(skuData[key]);
 			}
 		});
-
-		// Thêm các file ảnh vào FormData
-		// skuData.images.forEach((image) => {
-		// 	formData.append(`images`, image);
-		// });
 		// Thêm file ảnh vào FormData nếu có
 		if (skuData.image) {
 			formData.append("images", skuData.image);
