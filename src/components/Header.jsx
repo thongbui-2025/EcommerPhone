@@ -16,6 +16,9 @@ const Header = ({
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 	const navigate = useNavigate();
 
+	const [cartCount, setCartCount] = useState(0);
+	const cartId = localStorage.getItem("cartId");
+
 	const dropdownRef = useRef(null);
 
 	useEffect(() => {
@@ -28,6 +31,16 @@ const Header = ({
 			setUsername(storedUsername);
 		}
 	}, []);
+
+	// Lấy số lượng sản phẩm trong giỏ hàng
+	useEffect(() => {
+		axios
+			.get(`/Cart_Item?cartId=${cartId}`)
+			.then((response) => setCartCount(response.data.length))
+			.catch((error) =>
+				console.error("Error fetching cart data:", error)
+			);
+	}, [cartId]);
 
 	const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
 	// Đóng dropdown khi click ra ngoài
@@ -201,8 +214,13 @@ const Header = ({
 							)}
 						</div>
 					)}
-					<Link to="/cart" className="">
+					<Link to="/cart" className="relative">
 						<ShoppingBag className="h-5 w-5 cursor-pointer hover:text-[#6DD5ED] transition-colors" />
+						{cartCount > 0 && (
+							<span className="absolute -top-2 -right-2 bg-[#6DD5ED] text-white text-xs font-semibold px-1 rounded-full">
+								{cartCount}
+							</span>
+						)}
 					</Link>
 				</div>
 			</div>

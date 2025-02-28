@@ -116,6 +116,7 @@ export default function ProductDetails() {
 			});
 			console.log("Added to cart:", response.data);
 			alert("Thêm vào giỏ hàng thành công!");
+			navigate("/cart");
 		} catch (error) {
 			console.error("Error adding to cart:", error);
 			alert("Có lỗi xảy ra khi thêm vào giỏ.");
