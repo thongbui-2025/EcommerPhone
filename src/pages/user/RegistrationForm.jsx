@@ -1,5 +1,6 @@
 import axios from "axios";
-import { useState } from "react";
+import { CircleCheckBig, OctagonAlert } from "lucide-react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router";
 
 const RegisterForm = () => {
@@ -12,6 +13,15 @@ const RegisterForm = () => {
 	});
 
 	const [message, setMessage] = useState("");
+	const [messageType, setMessageType] = useState(""); // success | error
+	const [showMessage, setShowMessage] = useState(false);
+
+	useEffect(() => {
+		if (showMessage) {
+			const timer = setTimeout(() => setShowMessage(false), 2000);
+			return () => clearTimeout(timer);
+		}
+	}, [showMessage]);
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
@@ -25,6 +35,8 @@ const RegisterForm = () => {
 		e.preventDefault();
 		if (formData.password !== formData.confirmPassword) {
 			setMessage("Mật khẩu không khớp!");
+			setMessageType("error");
+			setShowMessage(true);
 			return;
 		}
 
@@ -39,7 +51,10 @@ const RegisterForm = () => {
 				localStorage.setItem("token", response.data.token);
 				localStorage.setItem("role", "user");
 			}
+
 			setMessage("Đăng ký thành công! Vui lòng kiểm tra email.");
+			setMessageType("success");
+			setShowMessage(true);
 			setFormData({
 				fullName: "",
 				email: "",
@@ -50,11 +65,33 @@ const RegisterForm = () => {
 		} catch (error) {
 			console.log(error);
 			setMessage("Đăng ký thất bại. Vui lòng thử lại!");
+			setMessageType("error");
+			setShowMessage(true);
 		}
 	};
 
 	return (
 		<div className="min-h-screen w-full flex bg-[#39B7CD] relative overflow-hidden">
+			{/* Hiển thị thông báo */}
+			{showMessage && (
+				<div
+					className={`fixed top-10 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg text-white font-medium transition-all duration-300 shadow-lg ${
+						messageType === "success"
+							? "bg-green-500"
+							: "bg-red-500"
+					}`}
+				>
+					<span className="flex items-center gap-2">
+						{messageType === "success" ? (
+							<CircleCheckBig size={24} />
+						) : (
+							<OctagonAlert size={24} />
+						)}
+						{message}
+					</span>
+				</div>
+			)}
+
 			{/* Left Section */}
 			<div className="flex-1 p-8 relative text-gray-800 flex flex-col z-10">
 				<div className="flex flex-col justify-center items-center h-full">
@@ -150,7 +187,6 @@ const RegisterForm = () => {
 							Đăng nhập
 						</Link>
 					</p>
-					<p className="text-center mt-4 text-red-500">{message}</p>
 				</div>
 			</div>
 		</div>

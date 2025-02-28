@@ -275,9 +275,15 @@ export default function Homepage() {
 			</div>
 
 			{/* Hot Promotions Section */}
-			<div ref={productSectionRef} className="mb-12">
+			<div
+				ref={(el) => {
+					productSectionRef.current = el;
+					productSearchRef.current = el;
+				}}
+				className="mb-12"
+			>
 				<div
-					ref={productSearchRef}
+					// ref={productSearchRef}
 					className="mb-6 flex items-center justify-between"
 				>
 					<div className="flex items-center">
