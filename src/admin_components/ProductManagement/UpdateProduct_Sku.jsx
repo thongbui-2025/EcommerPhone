@@ -1,48 +1,26 @@
-import { useEffect, useState } from "react";
+"use client";
+
+import { useState } from "react";
 import { ArrowLeft } from "lucide-react";
-import axios from "axios";
 
 const UpdateProduct_Sku = ({ product, onBack, onUpdate }) => {
-	console.log(product);
-
 	const [productData, setProductData] = useState({
 		id: product?.id || 0,
-		name: product?.name || "",
-		description: product?.description || "",
-		brandId: product?.brandId || "",
-		chip: product?.chip || "",
-		size: product?.size || "",
-		lxWxHxW: product?.lxWxHxW || "",
-		display: product?.display || "",
-		frontCamera: product?.frontCamera || "",
-		rearCamera: product?.rearCamera || "",
-		battery: product?.battery || "",
-		charger: product?.charger || "",
-		accessories: product?.accessories || "",
-		quality: product?.quality || "",
-		sold: product?.sold || 0,
-		isAvailable: product?.isAvailable ?? true,
-		dayCreate: product?.dayCreate || new Date().toISOString(),
-		dayUpdate: new Date().toISOString(),
+		RAM_ROM: product?.raM_ROM || "",
+		Color: product?.color || "",
+		FinalPrice: product?.finalPrice || 0,
+		images: product?.imageName || "",
+		DefaultPrice: product?.defaultPrice || 0,
+		Quantity: product?.quantity || 0,
+		Sold: product?.sold || 0,
+		isAvailable: product?.isAvailable || true,
+		SKU: product?.sku || "",
 	});
 
 	const [productImage, setProductImage] = useState({
-		id: product?.images?.id,
-		imageName: product?.images?.imageName,
+		imageName: product?.imageName || "",
 		images: [],
 	});
-
-	const [brands, setBrands] = useState([]);
-
-	useEffect(() => {
-		// Lấy danh sách Brands
-		axios
-			.get("/Brands")
-			.then((response) => setBrands(response.data))
-			.catch((error) => console.error("Error fetching brands:", error));
-	}, []);
-
-	// console.log(brands);
 
 	const handleInputChange = (e) => {
 		const { name, value } = e.target;
@@ -55,26 +33,23 @@ const UpdateProduct_Sku = ({ product, onBack, onUpdate }) => {
 	const handleImageChange = (e) => {
 		const file = e.target.files?.[0];
 		if (file) {
-			setProductImage((prev) => ({
-				...prev,
+			setProductImage({
+				imageName: file.name,
 				images: file,
-			}));
+			});
 		}
 	};
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
-		onUpdate(
-			productData,
-			productImage // không thể truyền images cùng vì cập nhật product không có trường images
-		);
+		onUpdate(productData, productImage);
 		onBack();
 	};
 
 	return (
 		<div className="bg-white rounded-lg mt-5 p-5">
 			<div className="bg-blue-400 text-white p-4 rounded-t-lg">
-				Trang chủ / Sản phẩm / Cập nhật sản phẩm
+				Trang chủ / Sản phẩm / Cập nhật sản phẩm SKU
 			</div>
 
 			<div className="p-6 shadow">
@@ -91,74 +66,54 @@ const UpdateProduct_Sku = ({ product, onBack, onUpdate }) => {
 						{/* Left Column */}
 						<div className="space-y-4">
 							<div>
-								<label className="block mb-1">
-									Tên sản phẩm
-								</label>
+								<label className="block mb-1">id</label>
 								<input
 									type="text"
-									name="name"
-									value={productData.name}
+									name="SKU"
+									value={productData.id}
 									onChange={handleInputChange}
 									className="w-full p-2 border rounded"
 								/>
 							</div>
-
-							<label className="block mb-1">Thương hiệu</label>
-							<select
-								name="brandId"
-								value={productData.brandId}
-								onChange={handleInputChange}
-								className="w-full p-2 border rounded"
-							>
-								{/* <option value="">Chọn thương hiệu</option> */}
-								{brands.map((brand) => (
-									<option key={brand.id} value={brand.id}>
-										{brand.name}
-									</option>
-								))}
-							</select>
-
 							<div>
-								<label className="block mb-1">Chip</label>
+								<label className="block mb-1">SKU</label>
 								<input
 									type="text"
-									name="chip"
-									value={productData.chip}
+									name="SKU"
+									value={productData.SKU}
 									onChange={handleInputChange}
 									className="w-full p-2 border rounded"
 								/>
 							</div>
 
 							<div>
-								<label className="block mb-1">Kích thước</label>
+								<label className="block mb-1">RAM/ROM</label>
 								<input
 									type="text"
-									name="size"
-									value={productData.size}
+									name="RAM_ROM"
+									value={productData.RAM_ROM}
 									onChange={handleInputChange}
 									className="w-full p-2 border rounded"
 								/>
 							</div>
 
 							<div>
-								<label className="block mb-1">
-									Kích thước chi tiết (DxRxCxN)
-								</label>
+								<label className="block mb-1">Màu sắc</label>
 								<input
 									type="text"
-									name="lxWxHxW"
-									value={productData.lxWxHxW}
+									name="Color"
+									value={productData.Color}
 									onChange={handleInputChange}
 									className="w-full p-2 border rounded"
 								/>
 							</div>
 
 							<div>
-								<label className="block mb-1">Màn hình</label>
+								<label className="block mb-1">Giá cuối</label>
 								<input
-									type="text"
-									name="display"
-									value={productData.display}
+									type="number"
+									name="FinalPrice"
+									value={productData.FinalPrice}
 									onChange={handleInputChange}
 									className="w-full p-2 border rounded"
 								/>
@@ -168,88 +123,39 @@ const UpdateProduct_Sku = ({ product, onBack, onUpdate }) => {
 						{/* Right Column */}
 						<div className="space-y-4">
 							<div>
-								<label className="block mb-1">
-									Camera trước
-								</label>
+								<label className="block mb-1">Giá gốc</label>
 								<input
-									type="text"
-									name="frontCamera"
-									value={productData.frontCamera}
+									type="number"
+									name="DefaultPrice"
+									value={productData.DefaultPrice}
 									onChange={handleInputChange}
 									className="w-full p-2 border rounded"
 								/>
 							</div>
 
 							<div>
-								<label className="block mb-1">Camera sau</label>
+								<label className="block mb-1">Số lượng</label>
 								<input
-									type="text"
-									name="rearCamera"
-									value={productData.rearCamera}
+									type="number"
+									name="Quantity"
+									value={productData.Quantity}
 									onChange={handleInputChange}
 									className="w-full p-2 border rounded"
 								/>
 							</div>
 
 							<div>
-								<label className="block mb-1">Pin</label>
+								<label className="block mb-1">Đã bán</label>
 								<input
-									type="text"
-									name="battery"
-									value={productData.battery}
+									type="number"
+									name="Sold"
+									value={productData.Sold}
 									onChange={handleInputChange}
 									className="w-full p-2 border rounded"
+									disabled
 								/>
 							</div>
 
-							<div>
-								<label className="block mb-1">Sạc</label>
-								<input
-									type="text"
-									name="charger"
-									value={productData.charger}
-									onChange={handleInputChange}
-									className="w-full p-2 border rounded"
-								/>
-							</div>
-
-							<div>
-								<label className="block mb-1">Phụ kiện</label>
-								<input
-									type="text"
-									name="accessories"
-									value={productData.accessories}
-									onChange={handleInputChange}
-									className="w-full p-2 border rounded"
-								/>
-							</div>
-
-							<div>
-								<label className="block mb-1">Chất lượng</label>
-								<input
-									type="text"
-									name="quality"
-									value={productData.quality}
-									onChange={handleInputChange}
-									className="w-full p-2 border rounded"
-								/>
-							</div>
-						</div>
-					</div>
-
-					<div className="grid grid-cols-2 gap-6">
-						<div>
-							<label className="block mb-1">Mô tả</label>
-							<textarea
-								name="description"
-								value={productData.description}
-								onChange={handleInputChange}
-								className="w-full p-2 border rounded"
-								rows="4"
-							/>
-						</div>
-
-						<div className="space-y-4">
 							<div>
 								<label className="block mb-1">
 									Hình ảnh sản phẩm
@@ -266,18 +172,6 @@ const UpdateProduct_Sku = ({ product, onBack, onUpdate }) => {
 									</p>
 								)}
 							</div>
-							<div>
-								<label className="block mb-1">Đã bán</label>
-								<input
-									type="number"
-									name="sold"
-									value={productData.sold}
-									onChange={handleInputChange}
-									className="w-full p-2 border rounded"
-									disabled
-								/>
-							</div>
-
 							<div>
 								<label className="flex items-center gap-2">
 									<input

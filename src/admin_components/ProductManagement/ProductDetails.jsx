@@ -1,15 +1,21 @@
-import { ArrowLeft, Edit, Trash2 } from "lucide-react";
+import { ArrowLeft, Edit } from "lucide-react";
 import { formatPrice } from "../../utils/formatPrice";
 import { useEffect, useState } from "react";
+import UpdateProduct_Sku from "./UpdateProduct_Sku";
+import axios from "axios";
 
 const ProductDetails = ({ product, onBack }) => {
 	const [selectedMemory, setSelectedMemory] = useState(null);
 	const [selectedColor, setSelectedColor] = useState(null);
 	const [selectedSku, setSelectedSku] = useState(null);
+	const [isEditing, setIsEditing] = useState(false);
 	// const [displayImage, setDisplayImage] = useState(null);
 
 	// const image = product.images;
 	// console.log("image", image);
+
+	console.log("product", product);
+	console.log("selectedSku", selectedSku);
 
 	useEffect(() => {
 		const skus = product?.skus;
@@ -24,6 +30,10 @@ const ProductDetails = ({ product, onBack }) => {
 			setSelectedSku(availableSkus[0]);
 		}
 	}, [product.skus, onBack]);
+
+	useEffect(() => {
+		console.log("Updated SKU State:", selectedSku);
+	}, [selectedSku]);
 
 	const specifications = [
 		{ label: "Màn hình:", value: product?.display },
@@ -76,6 +86,95 @@ const ProductDetails = ({ product, onBack }) => {
 			);
 		}
 	};
+
+	const handleEditSku = () => {
+		setIsEditing(true);
+	};
+
+	const fetchUpdatedSku = async (skuId) => {
+		try {
+			const { data } = await axios.get(`/Product_SKU/${skuId}`);
+			setSelectedSku(data);
+		} catch (error) {
+			console.error("Lỗi khi lấy lại SKU:", error);
+		}
+	};
+
+	const handleUpdate = async (updatedProduct_Sku, updatedImage) => {
+		try {
+			const token = localStorage.getItem("token");
+			console.log("Updated Product SKU:", updatedProduct_Sku);
+			console.log("Updated Image:", updatedImage);
+
+			const formData = new FormData();
+			formData.append("id", updatedProduct_Sku?.id || 0);
+			formData.append("RAM_ROM", updatedProduct_Sku?.RAM_ROM || "");
+			formData.append("Color", updatedProduct_Sku?.Color || "");
+			formData.append("FinalPrice", updatedProduct_Sku?.FinalPrice || 0);
+			formData.append("images", updatedImage?.images);
+			formData.append(
+				"DefaultPrice",
+				updatedProduct_Sku?.DefaultPrice || 0
+			);
+			formData.append("Quantity", updatedProduct_Sku?.Quantity || 0);
+			formData.append("Sold", updatedProduct_Sku?.Sold || 0);
+			formData.append(
+				"isAvailable",
+				updatedProduct_Sku?.isAvailable || true
+			);
+			formData.append("SKU", updatedProduct_Sku?.SKU || "");
+
+			for (let pair of formData.entries()) {
+				console.log(pair[0], pair[1]);
+			}
+
+			// Nếu có ảnh mới thì thêm vào formData
+			if (updatedImage?.images && updatedImage?.images.length > 0) {
+				// Có ảnh mới → thêm vào formData
+				formData.append("images", updatedImage.images);
+			} else if (updatedProduct_Sku?.imageName) {
+				// Không có ảnh mới nhưng có ảnh cũ → tải về và thêm vào formData
+				const response = await fetch(updatedProduct_Sku.imageName); // Tải ảnh từ URL
+				const blob = await response.blob(); // Chuyển thành Blob
+				const file = new File([blob], "old_image.jpg", {
+					type: blob.type,
+				}); // Tạo File từ Blob
+				formData.append("images", file);
+			} else {
+				// Không có ảnh nào → Gửi rỗng hoặc bỏ qua
+				console.log("Không có ảnh nào để gửi.");
+			}
+
+			// Gửi API cập nhật
+			await axios.put(
+				`/Product_SKU/${updatedProduct_Sku?.id}`,
+				formData,
+				{
+					headers: {
+						Authorization: `Bearer ${token}`,
+						"Content-Type": "multipart/form-data",
+					},
+				}
+			);
+
+			// Gọi API để lấy dữ liệu mới sau khi cập nhật
+			await fetchUpdatedSku(updatedProduct_Sku?.id);
+		} catch (error) {
+			console.error("Lỗi khi cập nhật sản phẩm:", error);
+		}
+		setIsEditing(false);
+	};
+
+	if (isEditing) {
+		return (
+			<UpdateProduct_Sku
+				product={selectedSku}
+				onBack={() => setIsEditing(false)}
+				onUpdate={handleUpdate}
+			/>
+		);
+	}
+
 	return (
 		<div className="bg-white rounded-lg p-8 mt-5">
 			{/* Breadcrumb */}
@@ -194,14 +293,17 @@ const ProductDetails = ({ product, onBack }) => {
 						</div>
 
 						<div className="flex space-x-4">
-							<button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 flex items-center gap-2">
+							<button
+								onClick={handleEditSku}
+								className="bg-blue-400 text-white px-4 py-2 rounded hover:bg-blue-600 flex items-center gap-2"
+							>
 								<Edit className="w-4 h-4" />
 								Sửa
 							</button>
-							<button className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 flex items-center gap-2">
+							{/* <button className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 flex items-center gap-2">
 								<Trash2 className="w-4 h-4" />
 								Xóa
-							</button>
+							</button> */}
 						</div>
 					</div>
 				</div>
