@@ -8,7 +8,7 @@ const ITEMS_PER_PAGE = 10;
 
 const OrderManagement = () => {
 	const [searchQuery, setSearchQuery] = useState("");
-	const [selectedStatus, setSelectedStatus] = useState("all");
+	const [selectedStatus, setSelectedStatus] = useState(null);
 	const [orders, setOrders] = useState([]);
 	const [selectedOrder, setSelectedOrder] = useState(null);
 
@@ -53,7 +53,7 @@ const OrderManagement = () => {
 			// Nhóm các orderItems theo orderId
 			const ordersWithDetails = orders.map((order) => {
 				const items = orderItems
-					.filter((item) => item.orderId === order.id)
+					.filter((item) => item.orderId === order?.id)
 					.map((item) => {
 						const sku = skuMap[item.product_SKUId] || {};
 						// console.log(sku);
@@ -97,7 +97,7 @@ const OrderManagement = () => {
 		(order) =>
 			order?.receiverName ||
 			("".toLowerCase().includes(searchQuery.toLowerCase()) &&
-				(selectedStatus === "all" || order.status === selectedStatus))
+				(selectedStatus === null || order?.status === selectedStatus))
 	);
 
 	const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -114,13 +114,13 @@ const OrderManagement = () => {
 
 	const getStatusText = (status) => {
 		switch (status) {
-			case "pending":
+			case 0:
 				return "Đang chờ duyệt";
-			case "delivering":
+			case 1:
 				return "Đang giao hàng";
-			case "delivered":
+			case 2:
 				return "Đã giao";
-			case "cancelled":
+			case 3:
 				return "Đã hủy";
 			default:
 				return status;
@@ -129,80 +129,121 @@ const OrderManagement = () => {
 
 	const getStatusColor = (status) => {
 		switch (status) {
-			case "pending":
+			case 0:
 				return "text-yellow-600";
-			case "delivering":
+			case 1:
 				return "text-blue-600";
-			case "delivered":
+			case 2:
 				return "text-green-600";
-			case "cancelled":
+			case 3:
 				return "text-red-600";
 			default:
 				return "text-gray-600";
 		}
 	};
 
-	// const handleApproveOrder = (id) => {
-	// 	setOrders((prevorders) =>
-	// 		prevorders.map((customer) =>
-	// 			customer.id === id
-	// 				? { ...customer, status: "delivering" }
-	// 				: customer
-	// 		)
-	// 	);
-	// };
-
-	// const handleCancelOrder = (id) => {
-	// 	setOrders((prevorders) =>
-	// 		prevorders.map((customer) =>
-	// 			customer.id === id
-	// 				? { ...customer, status: "cancelled" }
-	// 				: customer
-	// 		)
-	// 	);
-	// };
-
-	const handleViewOrder = (orderId) => {
-		const selectedCustomer = orders.find((c) => c.id === orderId);
-		console.log("selectedCustomer", selectedCustomer);
-		if (selectedCustomer) {
+	const handleApproveOrder = async (id) => {
+		if (selectedOrder) {
 			setSelectedOrder({
-				id: selectedCustomer.id,
-				customerName: selectedCustomer.receiverName,
-				customerPhone: selectedCustomer.receiverNumber,
-				customerAddress: selectedCustomer.shippingAddress,
-				orderDate: formatDate(selectedCustomer.orderDate),
-				orderItems: selectedCustomer.orderItems || [],
+				...selectedOrder,
+				status: 1,
 			});
+		}
+
+		let apiUrl = `/Orders/ship/${id}`;
+		if (apiUrl) {
+			try {
+				await axios.put(apiUrl);
+				setOrders((prevOrders) =>
+					prevOrders.map((order) =>
+						order?.id === id ? { ...order, status: 1 } : order
+					)
+				);
+			} catch (error) {
+				console.error("Error updating order status", error);
+			}
 		}
 	};
 
-	const handleUpdateOrderStatus = (orderId, newStatus) => {
+	const handleCancelOrder = async (id) => {
+		if (selectedOrder) {
+			setSelectedOrder({
+				...selectedOrder,
+				status: 3,
+			});
+		}
+
+		let apiUrl = `/Orders/cancel/${id}`;
+		if (apiUrl) {
+			try {
+				await axios.put(apiUrl);
+				setOrders((prevOrders) =>
+					prevOrders.map((order) =>
+						order?.id === id ? { ...order, status: 3 } : order
+					)
+				);
+			} catch (error) {
+				console.error("Error updating order status", error);
+			}
+		}
+	};
+
+	const handleViewOrder = (orderId) => {
+		const selectedOrder = orders.find((c) => c.id === orderId);
+		if (selectedOrder) {
+			setSelectedOrder(selectedOrder);
+		}
+	};
+
+	const handleUpdateOrderStatus = async (orderId, newStatus) => {
 		// Update the order status in both the order details and the list
+		// if (selectedOrder) {
+		// 	setSelectedOrder({
+		// 		...selectedOrder,
+		// 		status: newStatus,
+		// 		history: [
+		// 			{
+		// 				status: newStatus,
+		// 				date: new Date().toLocaleString("vi-VN"),
+		// 				note: `Đơn hàng được chuyển sang trạng thái ${getStatusText(
+		// 					newStatus
+		// 				)}`,
+		// 			},
+		// 			...(selectedOrder.history || []),
+		// 		],
+		// 	});
+		// }
+
 		if (selectedOrder) {
 			setSelectedOrder({
 				...selectedOrder,
 				status: newStatus,
-				history: [
-					{
-						status: newStatus,
-						date: new Date().toLocaleString("vi-VN"),
-						note: `Đơn hàng được chuyển sang trạng thái ${getStatusText(
-							newStatus
-						)}`,
-					},
-					...selectedOrder.history,
-				],
 			});
 		}
 
-		setOrders((prevorders) =>
-			prevorders.map((customer) =>
-				customer.id === orderId
-					? { ...customer, status: newStatus }
-					: customer
-			)
-		);
+		let apiUrl = "";
+		if (newStatus === 1) {
+			apiUrl = `/Orders/ship/${orderId}`;
+		} else if (newStatus === 2) {
+			apiUrl = `/Orders/deliver/${orderId}`;
+		} else if (newStatus === 3) {
+			apiUrl = `/Orders/cancel/${orderId}`;
+		}
+
+		if (apiUrl) {
+			try {
+				await axios.put(apiUrl);
+				setOrders((prevOrders) =>
+					prevOrders.map((order) =>
+						order.id === orderId
+							? { ...order, status: newStatus }
+							: order
+					)
+				);
+			} catch (error) {
+				console.error("Error updating order status", error);
+			}
+		}
 	};
 
 	if (selectedOrder) {
@@ -243,14 +284,20 @@ const OrderManagement = () => {
 
 						<select
 							value={selectedStatus}
-							onChange={(e) => setSelectedStatus(e.target.value)}
+							onChange={(e) =>
+								setSelectedStatus(
+									e.target.value === "null"
+										? null
+										: Number(e.target.value)
+								)
+							}
 							className="p-2 border rounded"
 						>
-							<option value="all">Tất cả trạng thái</option>
-							{/* <option value="pending">Đang chờ duyệt</option>
-							<option value="delivering">Đang giao hàng</option>
-							<option value="delivered">Đã giao</option>
-							<option value="cancelled">Đã hủy</option> */}
+							<option value="null">Tất cả trạng thái</option>
+							<option value="0">Đang chờ duyệt</option>
+							<option value="1">Đang giao hàng</option>
+							<option value="2">Đã giao</option>
+							<option value="3">Đã hủy</option>
 						</select>
 					</div>
 
@@ -277,9 +324,9 @@ const OrderManagement = () => {
 									<th className="border p-3 text-left">
 										Giá trị đơn hàng
 									</th>
-									{/* <th className="border p-3 text-left">
+									<th className="border p-3 text-left">
 										Xử lý đơn
-									</th> */}
+									</th>
 									<th className="border p-3 text-left">
 										Thao tác
 									</th>
@@ -288,45 +335,44 @@ const OrderManagement = () => {
 							<tbody>
 								{displayedorders
 									.filter(
-										(customer) =>
-											selectedStatus === "all" ||
-											customer.status === selectedStatus
+										(order) =>
+											selectedStatus === null ||
+											order.status === selectedStatus
 									)
-									.map((customer, index) => (
+									.map((order, index) => (
 										<tr
-											key={customer.id}
+											key={order?.id}
 											className="hover:bg-gray-50"
 										>
 											<td className="border p-3">
 												{startIndex + index + 1}
 											</td>
 											<td className="border p-3">
-												{customer.receiverName}
+												{order?.receiverName}
 											</td>
 											<td className="border p-3">
-												{customer.receiverNumber}
+												{order?.receiverNumber}
 											</td>
 											<td className="border p-3">
-												{formatDate(customer.orderDate)}
+												{formatDate(order?.orderDate)}
 											</td>
 											<td
 												className={`border p-3 ${getStatusColor(
-													customer.status
+													order?.status
 												)}`}
 											>
-												Thành công
+												{getStatusText(order?.status)}
 											</td>
 											<td className="border p-3">
-												{formatPrice(customer.payment)}
+												{formatPrice(order?.orderTotal)}
 											</td>
-											{/* <td className="border p-3">
-												{customer.status ===
-													"pending" && (
+											<td className="border p-3">
+												{order?.status === 0 && (
 													<div className="flex space-x-2">
 														<button
 															onClick={() =>
 																handleApproveOrder(
-																	customer.id
+																	order?.id
 																)
 															}
 															className="text-blue-500 hover:underline"
@@ -337,7 +383,7 @@ const OrderManagement = () => {
 														<button
 															onClick={() =>
 																handleCancelOrder(
-																	customer.id
+																	order?.id
 																)
 															}
 															className="text-red-500 hover:underline"
@@ -346,13 +392,12 @@ const OrderManagement = () => {
 														</button>
 													</div>
 												)}
-												{customer.status ===
-													"delivering" && (
+												{/* {order?.status === 1 && (
 													<div className="flex space-x-2">
 														<button
 															onClick={() =>
 																handleCancelOrder(
-																	customer.id
+																	order?.id
 																)
 															}
 															className="text-red-500 hover:underline"
@@ -360,13 +405,13 @@ const OrderManagement = () => {
 															Hủy đơn
 														</button>
 													</div>
-												)}
-											</td> */}
+												)} */}
+											</td>
 											<td className="border p-3">
 												<button
 													onClick={() =>
 														handleViewOrder(
-															customer.id
+															order?.id
 														)
 													}
 													className="text-blue-500 hover:underline flex items-center gap-1"

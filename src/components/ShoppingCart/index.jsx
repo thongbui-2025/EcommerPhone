@@ -7,6 +7,7 @@ import Loading from "../Loading";
 export default function ShoppingCart() {
 	const [cartItems, setCartItems] = useState([]);
 
+	const userId = localStorage.getItem("userId");
 	const cartId = localStorage.getItem("cartId");
 
 	const { handleSmooth } = useOutletContext();
@@ -155,7 +156,20 @@ export default function ShoppingCart() {
 
 	return (
 		<div className={`${cartItems.length == 0 ? "mt-20" : ""}`}>
-			{isLoadingCart ? (
+			{!userId ? (
+				<div className="text-center text-xl text-[#3ea8c0] font-semibold">
+					Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng nhé! 💖
+					<br />
+					<Link
+						to="/login"
+						onClick={handleNavigateSmooth}
+						className="text-[#3ea8c0] underline hover:text-[#F92F60]"
+					>
+						Đăng nhập ngay
+					</Link>{" "}
+					để khám phá và chọn mua sản phẩm yêu thích!
+				</div>
+			) : isLoadingCart ? (
 				<Loading />
 			) : cartItems.length > 0 ? (
 				<div className="container mx-auto px-4 py-8 max-w-4xl">

@@ -6,10 +6,9 @@ import { useEffect, useState } from "react";
 import { isAdmin } from "../../utils/auth";
 import { Link, useNavigate } from "react-router";
 
-export default function AdminPage() {
+export default function AdminPage({ activeTab, setActiveTab }) {
 	const navigate = useNavigate();
 	const [authorized, setAuthorized] = useState(null); // Kiểm tra trạng thái quyền
-	const [activeTab, setActiveTab] = useState("products");
 
 	useEffect(() => {
 		if (!isAdmin()) {
@@ -32,9 +31,14 @@ export default function AdminPage() {
 					<div className="flex justify-between h-16">
 						<div className="flex">
 							<div className="flex-shrink-0 flex items-center">
-								<span className="text-xl font-bold">
-									Admin Dashboard
-								</span>
+								<Link
+									to={"/productManagement"}
+									onClick={() => setActiveTab("products")}
+								>
+									<span className="text-xl font-bold">
+										Admin Dashboard
+									</span>
+								</Link>
 							</div>
 							<div className="hidden sm:-my-px sm:ml-6 sm:flex sm:space-x-8">
 								<Link
@@ -86,12 +90,6 @@ export default function AdminPage() {
 					</div>
 				</div>
 			</nav>
-			{/* <main>
-				{activeTab === "products" && <ProductManagement />}
-				{activeTab === "categories" && <CategoryManagement />}
-				{activeTab === "order" && <OrderManagement />}
-				{activeTab === "customer" && <CustomerManagement />}
-			</main> */}
 		</div>
 	);
 }

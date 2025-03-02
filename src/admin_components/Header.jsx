@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { isAdmin, logout } from "../utils/auth";
 
-const Header = () => {
+const Header = ({ setActiveTab }) => {
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 	const navigate = useNavigate();
 
@@ -23,7 +23,11 @@ const Header = () => {
 				<div className="flex items-center justify-between bg-[#333333] px-6">
 					<div className="flex items-center gap-1">
 						{/* Logo */}
-						<Link to="/admin" className="flex items-center">
+						<Link
+							to="/productManagement"
+							onClick={() => setActiveTab("products")}
+							className="flex items-center"
+						>
 							<img
 								src="/LogPhone.png"
 								alt="LogPhone"

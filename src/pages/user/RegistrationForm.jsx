@@ -1,7 +1,7 @@
 import axios from "axios";
 import { CircleCheckBig, OctagonAlert } from "lucide-react";
 import { useState, useEffect } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 
 const RegisterForm = () => {
 	const [formData, setFormData] = useState({
@@ -15,6 +15,8 @@ const RegisterForm = () => {
 	const [message, setMessage] = useState("");
 	const [messageType, setMessageType] = useState(""); // success | error
 	const [showMessage, setShowMessage] = useState(false);
+
+	const navigate = useNavigate();
 
 	useEffect(() => {
 		if (showMessage) {
@@ -62,6 +64,7 @@ const RegisterForm = () => {
 				password: "",
 				confirmPassword: "",
 			});
+			navigate("/login");
 		} catch (error) {
 			console.log(error);
 			setMessage("Đăng ký thất bại. Vui lòng thử lại!");

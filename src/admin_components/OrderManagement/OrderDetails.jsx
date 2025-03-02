@@ -13,13 +13,13 @@ const OrderDetails = ({ order, onBack, onUpdateStatus }) => {
 
 	const getStatusText = (status) => {
 		switch (status) {
-			case "pending":
+			case 0:
 				return "Đang chờ duyệt";
-			case "delivering":
+			case 1:
 				return "Đang giao hàng";
-			case "delivered":
+			case 2:
 				return "Đã giao";
-			case "cancelled":
+			case 3:
 				return "Đã hủy";
 			default:
 				return status;
@@ -28,13 +28,13 @@ const OrderDetails = ({ order, onBack, onUpdateStatus }) => {
 
 	const getStatusColor = (status) => {
 		switch (status) {
-			case "pending":
+			case 0:
 				return "text-yellow-600 bg-yellow-50";
-			case "delivering":
+			case 1:
 				return "text-blue-600 bg-blue-50";
-			case "delivered":
+			case 2:
 				return "text-green-600 bg-green-50";
-			case "cancelled":
+			case 3:
 				return "text-red-600 bg-red-50";
 			default:
 				return "text-gray-600 bg-gray-50";
@@ -43,13 +43,13 @@ const OrderDetails = ({ order, onBack, onUpdateStatus }) => {
 
 	const getStatusIcon = (status) => {
 		switch (status) {
-			case "pending":
+			case 0:
 				return <Clock className="w-5 h-5" />;
-			case "delivering":
+			case 1:
 				return <Truck className="w-5 h-5" />;
-			case "delivered":
+			case 2:
 				return <CheckCircle className="w-5 h-5" />;
-			case "cancelled":
+			case 3:
 				return <XCircle className="w-5 h-5" />;
 			default:
 				return <Package className="w-5 h-5" />;
@@ -57,7 +57,7 @@ const OrderDetails = ({ order, onBack, onUpdateStatus }) => {
 	};
 
 	const calculateTotalPrice = (orderItems) => {
-		return orderItems.reduce((total, item) => {
+		return orderItems?.reduce((total, item) => {
 			return total + item.price * item.quantity;
 		}, 0);
 	};
@@ -67,7 +67,7 @@ const OrderDetails = ({ order, onBack, onUpdateStatus }) => {
 			<div className="bg-white rounded-lg shadow">
 				{/* Breadcrumb */}
 				<div className="bg-blue-400 text-white p-4 rounded-t-lg">
-					Trang chủ / Đơn hàng / Chi tiết đơn hàng #{order.id}
+					Trang chủ / Đơn hàng / Chi tiết đơn hàng #{order?.id}
 				</div>
 
 				<div className="p-6">
@@ -88,10 +88,10 @@ const OrderDetails = ({ order, onBack, onUpdateStatus }) => {
 								<div className="flex items-center gap-4">
 									<div
 										className={`p-2 rounded-full ${getStatusColor(
-											order.status
+											order?.status
 										)}`}
 									>
-										{getStatusIcon(order.status)}
+										{getStatusIcon(order?.status)}
 									</div>
 									<div>
 										<h3 className="font-semibold">
@@ -99,21 +99,18 @@ const OrderDetails = ({ order, onBack, onUpdateStatus }) => {
 										</h3>
 										<p
 											className={getStatusColor(
-												order.status
+												order?.status
 											)}
 										>
-											{getStatusText(order.status)}
+											{getStatusText(order?.status)}
 										</p>
 									</div>
 								</div>
-								{order.status === "pending" && (
+								{order?.status === 0 && (
 									<div className="flex gap-2">
 										<button
 											onClick={() =>
-												onUpdateStatus(
-													order.id,
-													"delivering"
-												)
+												onUpdateStatus(order?.id, 1)
 											}
 											className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
 										>
@@ -121,10 +118,7 @@ const OrderDetails = ({ order, onBack, onUpdateStatus }) => {
 										</button>
 										<button
 											onClick={() =>
-												onUpdateStatus(
-													order.id,
-													"cancelled"
-												)
+												onUpdateStatus(order?.id, 3)
 											}
 											className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
 										>
@@ -132,33 +126,27 @@ const OrderDetails = ({ order, onBack, onUpdateStatus }) => {
 										</button>
 									</div>
 								)}
-								{order.status === "delivering" && (
+								{order?.status === 1 && (
 									<div className="flex gap-2">
 										<button
 											onClick={() =>
-												onUpdateStatus(
-													order.id,
-													"delivered"
-												)
+												onUpdateStatus(order?.id, 2)
 											}
 											className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
 										>
 											Xác nhận đã giao
 										</button>
-										<button
+										{/* <button
 											onClick={() =>
-												onUpdateStatus(
-													order.id,
-													"cancelled"
-												)
+												onUpdateStatus(order?.id, 3)
 											}
 											className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
 										>
 											Hủy đơn
-										</button>
+										</button> */}
 									</div>
 								)}
-								{order.status === "delivered" && (
+								{order?.status === 2 && (
 									<div className="text-green-600 font-semibold">
 										Đơn hàng đã được giao thành công
 									</div>
@@ -187,47 +175,49 @@ const OrderDetails = ({ order, onBack, onUpdateStatus }) => {
 											</tr>
 										</thead>
 										<tbody className="divide-y">
-											{order.orderItems.map((product) => (
-												<tr key={product.id}>
-													<td className="py-4">
-														<div className="flex items-center gap-4">
-															<img
-																src={
-																	product
-																		.image
-																		.imageName ||
-																	"/placeholder.svg"
-																}
-																alt={
-																	product.name
-																}
-																className="w-16 h-16 object-cover rounded"
-															/>
-															<span>
-																{
-																	product
-																		.product
-																		.name
-																}
-															</span>
-														</div>
-													</td>
-													<td className="py-4">
-														{formatPrice(
-															product.price
-														)}
-													</td>
-													<td className="py-4">
-														{product.quantity}
-													</td>
-													<td className="py-4 text-right">
-														{formatPrice(
-															product.price *
-																product.quantity
-														)}
-													</td>
-												</tr>
-											))}
+											{order?.orderItems?.map(
+												(product) => (
+													<tr key={product.id}>
+														<td className="py-4">
+															<div className="flex items-center gap-4">
+																<img
+																	src={
+																		product
+																			.image
+																			.imageName ||
+																		"/placeholder.svg"
+																	}
+																	alt={
+																		product.name
+																	}
+																	className="w-16 h-16 object-cover rounded"
+																/>
+																<span>
+																	{
+																		product
+																			.product
+																			.name
+																	}
+																</span>
+															</div>
+														</td>
+														<td className="py-4">
+															{formatPrice(
+																product.price
+															)}
+														</td>
+														<td className="py-4">
+															{product.quantity}
+														</td>
+														<td className="py-4 text-right">
+															{formatPrice(
+																product.price *
+																	product.quantity
+															)}
+														</td>
+													</tr>
+												)
+											)}
 										</tbody>
 										<tfoot className="border-t">
 											<tr>
@@ -240,7 +230,7 @@ const OrderDetails = ({ order, onBack, onUpdateStatus }) => {
 												<td className="py-4 text-right font-semibold text-lg text-red-600">
 													{formatPrice(
 														calculateTotalPrice(
-															order.orderItems
+															order?.orderItems
 														)
 													)}
 												</td>
@@ -264,7 +254,7 @@ const OrderDetails = ({ order, onBack, onUpdateStatus }) => {
 											Họ tên:
 										</label>
 										<p className="font-medium">
-											{order.customerName}
+											{order?.receiverName}
 										</p>
 									</div>
 									<div>
@@ -272,7 +262,7 @@ const OrderDetails = ({ order, onBack, onUpdateStatus }) => {
 											Số điện thoại:
 										</label>
 										<p className="font-medium">
-											{order.customerPhone}
+											{order?.receiverNumber}
 										</p>
 									</div>
 									<div>
@@ -280,7 +270,7 @@ const OrderDetails = ({ order, onBack, onUpdateStatus }) => {
 											Địa chỉ:
 										</label>
 										<p className="font-medium">
-											{order.customerAddress}
+											{order?.shippingAddress}
 										</p>
 									</div>
 								</div>
@@ -293,7 +283,7 @@ const OrderDetails = ({ order, onBack, onUpdateStatus }) => {
 								</h3>
 								<div className="p-4">
 									<div className="space-y-4">
-										{order.history.map((item, index) => (
+										{order?.history?.map((item, index) => (
 											<div
 												key={index}
 												className="flex items-start gap-4 border-l-2 border-blue-500 pl-4 pb-4"
