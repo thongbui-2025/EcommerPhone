@@ -1,13 +1,16 @@
 import axios from "axios";
-import { Store, HelpCircle } from "lucide-react";
+import { Store, HelpCircle, TruckIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { formatPrice } from "../../utils/formatPrice";
 import { Link, useNavigate, useOutletContext } from "react-router";
 import Loading from "../Loading";
+import { formatDate } from "../../utils/formatDate";
 
 const PurchaseHistory = () => {
 	const [orderDetail, setOrderDetails] = useState(null);
 	const [isLoadingOrderDetail, setIsLoadingOrderDetail] = useState(false); // Loading khi state  chưa update
+	const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+	const [orderToDelete, setOrderToDelete] = useState(null);
 
 	const userId = localStorage.getItem("userId");
 	const navigate = useNavigate();
@@ -97,6 +100,37 @@ const PurchaseHistory = () => {
 		}, 300);
 	};
 
+	const handleConfirmModal = async () => {
+		const apiUrl = `/Orders/cancel/${orderToDelete}`;
+		if (apiUrl) {
+			try {
+				await axios.put(apiUrl);
+				setOrderDetails((prevOrders) =>
+					prevOrders.map((order) =>
+						order?.id === orderToDelete
+							? { ...order, status: 3 }
+							: order
+					)
+				);
+			} catch (error) {
+				console.error("Error updating order status", error);
+			} finally {
+				setShowDeleteConfirmation(false);
+				setOrderToDelete(null);
+			}
+		}
+	};
+
+	const handleCancelClick = (orderId) => {
+		setOrderToDelete(orderId);
+		setShowDeleteConfirmation(true);
+	};
+
+	const handleCancelModal = () => {
+		setShowDeleteConfirmation(false);
+		setOrderToDelete(null);
+	};
+
 	return (
 		<div className="container mx-auto px-4 py-8">
 			{/* Hot Promotions Section */}
@@ -135,14 +169,43 @@ const PurchaseHistory = () => {
 										</button>
 									</div>
 									<div className="flex items-center gap-2 text-green-500">
-										<span>
-											{order.deliveryStatus ||
+										{/* Xử lý trạng thái đơn hàng */}
+										<span
+											className={`
+												${order.status === 0 ? "text-orange-500" : ""}
+												${order.status === 1 ? "text-blue-500" : ""}
+												${order.status === 2 ? "text-green-500" : ""}
+												${order.status === 3 ? "text-red-500" : ""}
+												flex items-center gap-2
+											`}
+										>
+											{(order.status === 1 ||
+												order.status === 2) && (
+												<TruckIcon className="h-5 w-5" />
+											)}
+											{order.status === 0 && "Chờ duyệt"}
+											{order.status === 1 &&
+												"Đang giao hàng"}
+											{order.status === 2 &&
 												"Giao hàng thành công"}
+											{order.status != 3 && (
+												<div className="relative group">
+													<HelpCircle className="h-4 w-4 text-gray-500" />
+													<div className="absolute left-1/2 -translate-x-1/2 mt-2 bg-white text-gray-700 px-3 py-2 rounded-lg shadow-md text-sm group-hover:block hidden">
+														{formatDate(
+															order?.orderDate
+														)}
+													</div>
+												</div>
+											)}
 										</span>
-										<HelpCircle className="h-4 w-4" />
-										<span className="text-red-500 font-medium ml-2">
-											{/* {order.status} */}
-											HOÀN THÀNH
+
+										<span className="text-red-500 ml-2">
+											{order.status === 0 && "CHỜ XỬ LÝ"}
+											{order.status === 1 &&
+												"CHỜ GIAO HÀNG"}
+											{order.status === 2 && "HOÀN THÀNH"}
+											{order.status === 3 && "ĐÃ HỦY"}
 										</span>
 									</div>
 								</div>
@@ -178,13 +241,17 @@ const PurchaseHistory = () => {
 															x{item?.quantity}
 														</p>
 													</div>
-													<div className="text-right">
-														{/* <p className="text-gray-400 line-through text-md">
-												{formatPrice(item.price)}
-											</p> */}
+													<div className="text-right flex gap-2">
+														<p className="text-black opacity-25 line-through text-md">
+															{formatPrice(
+																item?.sku
+																	.defaultPrice
+															)}
+														</p>
 														<p className="text-red-500">
 															{formatPrice(
-																item.price *
+																item?.sku
+																	.finalPrice *
 																	item.quantity
 															)}
 														</p>
@@ -209,13 +276,26 @@ const PurchaseHistory = () => {
 									<div className="flex items-center justify-between">
 										<div className="text-md text-gray-500">
 											Đánh giá sản phẩm trước{" "}
-											{order.ratingDeadline}
+											{/* {order.ratingDeadline} */}
 										</div>
 										<div className="flex gap-2">
 											<button className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
 												Đánh Giá
 											</button>
-											<button className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50">
+											{order?.status === 0 &&
+												!order?.isPaid && ( // Nếu chưa thanh toán
+													<button
+														onClick={() =>
+															handleCancelClick(
+																order?.id
+															)
+														}
+														className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 cursor-pointer"
+													>
+														Yêu cầu hủy
+													</button>
+												)}
+											<button className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 cursor-pointer">
 												Mua Lại
 											</button>
 										</div>
@@ -239,6 +319,34 @@ const PurchaseHistory = () => {
 					</div>
 				)}
 			</div>
+			{/* Delete Confirmation Modal */}
+			{showDeleteConfirmation && (
+				<div className="fixed inset-0 bg-blue-950 bg-opacity-50 flex items-center justify-center">
+					<div className="bg-white p-6 rounded-lg shadow-lg">
+						<h2 className="text-xl font-bold mb-4">
+							Xác nhận hủy đơn hàng
+						</h2>
+						<p className="mb-4">
+							Bạn có chắc chắn muốn hủy đơn hàng này{" "}
+							{orderToDelete}?
+						</p>
+						<div className="flex justify-end space-x-2">
+							<button
+								className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 cursor-pointer"
+								onClick={handleCancelModal}
+							>
+								Hủy
+							</button>
+							<button
+								className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 cursor-pointer"
+								onClick={handleConfirmModal}
+							>
+								Xóa
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 };

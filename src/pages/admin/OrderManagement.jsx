@@ -3,6 +3,7 @@ import { Search, ChevronLeft, ChevronRight, Eye } from "lucide-react";
 import OrderDetails from "../../admin_components/OrderManagement/OrderDetails";
 import axios from "axios";
 import { formatPrice } from "../../utils/formatPrice";
+import { formatDate } from "../../utils/formatDate";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -105,12 +106,6 @@ const OrderManagement = () => {
 		startIndex,
 		startIndex + ITEMS_PER_PAGE
 	);
-
-	// formatDate
-	const formatDate = (dateString) => {
-		const options = { year: "numeric", month: "2-digit", day: "2-digit" };
-		return new Date(dateString).toLocaleDateString("vi-VN", options);
-	};
 
 	const getStatusText = (status) => {
 		switch (status) {

@@ -46,7 +46,7 @@ const FavoritePhone = () => {
 			.finally(() => setIsLoadingWishlist(false));
 	}, [userId]);
 
-	console.log("productsWishlist", productsWishlist);
+	// console.log("productsWishlist", productsWishlist);
 
 	const displayedProducts = productsWishlist?.slice(0, visibleCount);
 
