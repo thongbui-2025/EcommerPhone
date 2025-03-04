@@ -18,7 +18,9 @@ const Profile = () => {
 	const [showPasswordChange, setShowPasswordChange] = useState(false);
 	const [userInfo, setUserInfo] = useState(null);
 	const [loading, setLoading] = useState(true);
-	// const [[messageConfirmPassword, setMessageConfirmPassword]] = useState("");
+	const [showModal, setShowModal] = useState(false);
+	const [messageConfirmPassword, setMessageConfirmPassword] = useState("");
+	const [modalType, setModalType] = useState("success"); // success or error
 	const [password, setPassword] = useState({
 		current: "",
 		new: "",
@@ -47,6 +49,17 @@ const Profile = () => {
 		};
 		fetchUserInfo();
 	}, []);
+
+	console.log("userInfo", userInfo);
+
+	useEffect(() => {
+		if (showModal) {
+			const timer = setTimeout(() => {
+				setShowModal(false);
+			}, 3000);
+			return () => clearTimeout(timer);
+		}
+	}, [showModal]);
 
 	if (loading) {
 		<Loading />;
@@ -99,9 +112,20 @@ const Profile = () => {
 					headers: { Authorization: `Bearer ${token}` },
 				}
 			);
+			// Show success modal instead of alert
+			setModalType("success");
+			setMessageConfirmPassword("Đổi mật khẩu thành công!");
+			setShowModal(true);
+			setPassword({ current: "", new: "", confirm: "" });
 		} catch (error) {
-			console.error("Lỗi khi cập nhật mật khẩu:", error);
-			alert("Lỗi khi cập nhật mật khẩu:");
+			console.error("Lỗi khi đổi mật khẩu:", error);
+			// alert("Lỗi khi cập nhật mật khẩu:");
+			// Show error modal instead of alert
+			setModalType("error");
+			setMessageConfirmPassword(
+				"Bạn đang nhập sai mật khẩu cũ hoặc mật khẩu mới không hợp lệ (chữ cái hoa, số, ký hiệu)!"
+			);
+			setShowModal(true);
 			setPassword({ current: "", new: "", confirm: "" });
 		}
 		setIsEditing(false);
@@ -110,6 +134,78 @@ const Profile = () => {
 
 	return (
 		<div className="max-w-2xl mx-auto mt-10 p-6 mb-8 bg-white rounded-lg shadow-md">
+			{/* Password Change Modal */}
+			{showModal && (
+				<div className="fixed inset-0 bg-blue-950 bg-opacity-50 flex items-center justify-center z-50">
+					<div
+						className={`bg-white rounded-md shadow-lg w-80 overflow-hidden ${
+							modalType === "success"
+								? "border-green-500"
+								: "border-red-500"
+						} border-t-4`}
+					>
+						<div className="p-4">
+							<div className="flex items-center mb-2">
+								{modalType === "success" ? (
+									<div className="bg-green-100 p-1.5 rounded-full mr-2">
+										<svg
+											xmlns="http://www.w3.org/2000/svg"
+											className="h-5 w-5 text-green-500"
+											fill="none"
+											viewBox="0 0 24 24"
+											stroke="currentColor"
+										>
+											<path
+												strokeLinecap="round"
+												strokeLinejoin="round"
+												strokeWidth={2}
+												d="M5 13l4 4L19 7"
+											/>
+										</svg>
+									</div>
+								) : (
+									<div className="bg-red-100 p-1.5 rounded-full mr-2">
+										<svg
+											xmlns="http://www.w3.org/2000/svg"
+											className="h-5 w-5 text-red-500"
+											fill="none"
+											viewBox="0 0 24 24"
+											stroke="currentColor"
+										>
+											<path
+												strokeLinecap="round"
+												strokeLinejoin="round"
+												strokeWidth={2}
+												d="M6 18L18 6M6 6l12 12"
+											/>
+										</svg>
+									</div>
+								)}
+								<h3 className="text-base font-medium">
+									{modalType === "success"
+										? "Thành công"
+										: "Lỗi"}
+								</h3>
+							</div>
+							<p className="text-sm text-gray-700 mb-3">
+								{messageConfirmPassword}
+							</p>
+							<div className="flex justify-end">
+								<button
+									onClick={() => setShowModal(false)}
+									className={`px-3 py-1.5 text-sm text-white rounded ${
+										modalType === "success"
+											? "bg-green-500 hover:bg-green-600"
+											: "bg-red-500 hover:bg-red-600"
+									}`}
+								>
+									Đóng
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			)}
 			<h1 className="text-2xl font-bold mb-6">Thông tin cá nhân</h1>
 			<form
 				onSubmit={
@@ -136,6 +232,18 @@ const Profile = () => {
 							type="email"
 							name="email"
 							value={userInfo?.email || ""}
+							onChange={handleInfoChange}
+							disabled={!isEditing}
+							className="flex-1 p-2 border rounded"
+						/>
+					</div>
+					<div className="flex items-center">
+						<User className="w-6 h-6 mr-2" />
+						<label className="w-32">Họ và tên:</label>
+						<input
+							type="text"
+							name="fullName"
+							value={userInfo?.fullName || ""}
 							onChange={handleInfoChange}
 							disabled={!isEditing}
 							className="flex-1 p-2 border rounded"

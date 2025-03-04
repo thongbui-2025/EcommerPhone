@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
+import { formatPrice } from "../../utils/formatPrice";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+// import { useOutletContext } from "react-router";
 
 const Payment = () => {
 	const [selectedAddress, setSelectedAddress] = useState("default");
@@ -8,6 +12,7 @@ const Payment = () => {
 	const [paymentMethod, setPaymentMethod] = useState(0);
 	const [customerInfo, setCustomerInfo] = useState([]);
 	const [cartItems, setCartItems] = useState([]);
+	const [isModalOpen, setIsModalOpen] = useState(false);
 	const token = localStorage.getItem("token");
 	const cartId = localStorage.getItem("cartId");
 
@@ -15,6 +20,8 @@ const Payment = () => {
 	const navigate = useNavigate();
 	const buyNowProduct = state?.buyNowProduct;
 	console.log(buyNowProduct);
+
+	// const { handleSmooth } = useOutletContext();
 
 	useEffect(() => {
 		axios
@@ -96,12 +103,105 @@ const Payment = () => {
 		0
 	);
 
-	const formatPrice = (price) => {
-		return new Intl.NumberFormat("vi-VN").format(price) + " đ";
+	// const formatPrice = (price) => {
+	// 	return new Intl.NumberFormat("vi-VN").format(price) + " đ";
+	// };
+	const handleConfirmOrder = () => {
+		axios
+			.post(`/Cart_Item/Purchase`, null, {
+				params: {
+					userId: customerInfo.id,
+					cartId: cartId,
+					name: customerInfo.fullName,
+					phoneNumber: customerInfo.phoneNumber,
+					address:
+						selectedAddress === "custom"
+							? customAddress
+							: customerInfo.address,
+					pm: paymentMethod,
+					product_SKUId: buyNowProduct?.id,
+					quantity: 1,
+					returnUrl: window.location.origin + "/payment-success",
+				},
+				headers: { Authorization: `Bearer ${token}` },
+			})
+			.then((response) => {
+				if (paymentMethod === 1) {
+					window.open(response.data, "_blank");
+					navigate("/purchase-history");
+				} else {
+					// Handle other payment methods here
+					// Show success modal and then navigate to home page
+					setIsModalOpen(true);
+					toast.success("Đặt hàng thành công!", {
+						position: "top-center",
+						autoClose: 2000,
+						hideProgressBar: false,
+						closeOnClick: true,
+						pauseOnHover: true,
+						draggable: true,
+						onClose: () => {
+							navigate("/purchase-history");
+							// setTimeout(() => {
+							// 	handleSmooth();
+							// }, 300);
+						},
+					});
+					// Gửi sự kiện cập nhật giỏ hàng
+					window.dispatchEvent(new Event("cartUpdated"));
+				}
+			})
+			.catch((error) => console.error("Lỗi khi lấy dữ liệu:", error));
 	};
 
 	return (
 		<div className="container mx-auto px-4 py-8 max-w-4xl p-6 bg-white rounded-lg shadow-md">
+			{/* Toast Container for notifications */}
+			<ToastContainer />
+
+			{/* Success Modal */}
+			{isModalOpen && (
+				<div className="fixed inset-0 bg-blue-900 bg-opacity-50 flex items-center justify-center z-50">
+					<div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full border-t-4 border-green-500">
+						<div className="flex items-center mb-4">
+							<div className="bg-green-100 p-2 rounded-full mr-3">
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									className="h-6 w-6 text-green-500"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke="currentColor"
+								>
+									<path
+										strokeLinecap="round"
+										strokeLinejoin="round"
+										strokeWidth={2}
+										d="M5 13l4 4L19 7"
+									/>
+								</svg>
+							</div>
+							<h3 className="text-lg font-medium">
+								Đặt hàng thành công
+							</h3>
+						</div>
+						<p className="mb-4">
+							Cảm ơn bạn đã đặt hàng. Đơn hàng của bạn đã được xác
+							nhận và đang được xử lý.
+						</p>
+						<div className="flex justify-end">
+							<button
+								onClick={() => {
+									setIsModalOpen(false);
+									navigate("/");
+								}}
+								className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+							>
+								Đóng
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
 			{/* Customer Information */}
 			<div className="mb-8">
 				<h2 className="text-xl font-bold mb-4">
@@ -274,40 +374,7 @@ const Payment = () => {
 
 			{/* Complete Order Button */}
 			<button
-				onClick={() => {
-					axios
-						.post(`/Cart_Item/Purchase`, null, {
-							params: {
-								userId: customerInfo.id,
-								cartId: cartId,
-								name: customerInfo.fullName,
-								phoneNumber: customerInfo.phoneNumber,
-								address:
-									selectedAddress === "custom"
-										? customAddress
-										: customerInfo.address,
-								pm: paymentMethod,
-								product_SKUId: buyNowProduct?.id,
-								quantity: 1,
-								returnUrl:
-									window.location.origin + "/payment-success",
-							},
-							headers: { Authorization: `Bearer ${token}` },
-						})
-						.then((response) => {
-							if (paymentMethod === 1) {
-								window.open(response.data, "_blank");
-								navigate("/purchase-history");
-							} else {
-								// Handle other payment methods here
-								navigate("/");
-								console.log("Other payment method selected.");
-							}
-						})
-						.catch((error) =>
-							console.error("Lỗi khi lấy dữ liệu:", error)
-						);
-				}}
+				onClick={handleConfirmOrder}
 				className="w-full bg-red-600 text-white py-3 rounded font-bold cursor-pointer hover:bg-red-700 transition-colors"
 			>
 				XÁC NHẬN ĐẶT HÀNG

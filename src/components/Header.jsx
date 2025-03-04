@@ -69,7 +69,7 @@ const Header = ({
 		window.addEventListener("cartUpdated", updateCartCount);
 
 		return () => window.removeEventListener("cartUpdated", updateCartCount);
-	}, [cartId]);
+	}, [cartId, token]);
 
 	const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
 	// Đóng dropdown khi click ra ngoài

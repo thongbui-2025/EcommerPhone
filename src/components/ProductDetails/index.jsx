@@ -1,12 +1,16 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 import axios from "axios";
 
 export default function ProductDetails() {
 	// const [isExpanded, setIsExpanded] = useState(false);
 	const { id } = useParams();
 	const cartId = localStorage.getItem("cartId");
+	const userId = localStorage.getItem("userId");
 	console.log("productId:", id);
 
 	const [product, setProduct] = useState({
@@ -69,6 +73,9 @@ export default function ProductDetails() {
 	];
 
 	const memories = [...new Set(product.skus.map((sku) => sku.raM_ROM))];
+
+	console.log("memories", memories);
+
 	const availableColors = selectedMemory
 		? [
 				...new Set(
@@ -112,6 +119,27 @@ export default function ProductDetails() {
 	const [loading, setLoading] = useState(false);
 
 	const handleAddToCart = async () => {
+		if (!selectedSku) {
+			alert("Vui lòng chọn bộ nhớ và màu sắc trước khi thêm vào giỏ.");
+			return;
+		}
+
+		if (userId === null) {
+			// alert("Vui lòng đăng nhập để thêm vào giỏ hàng.");
+			toast.success("Vui lòng đăng nhập để mua hàng!", {
+				position: "top-center",
+				autoClose: 1000,
+				hideProgressBar: false,
+				closeOnClick: true,
+				pauseOnHover: true,
+				draggable: true,
+				onClose: () => {
+					navigate("/login");
+				},
+			});
+			return;
+		}
+
 		setLoading(true);
 		try {
 			const response = await axios.post("/Product_SKU/addToCart", null, {
@@ -150,7 +178,8 @@ export default function ProductDetails() {
 
 	return (
 		<div className="container mx-auto px-4 py-8 max-w-6xl">
-			{/* Modal Component */}
+			<ToastContainer />
+
 			{/* Modal Component */}
 			{showModal && (
 				<div className="fixed inset-0 flex items-center justify-center z-50">
@@ -241,10 +270,11 @@ export default function ProductDetails() {
 						<div className="aspect-square relative">
 							<img
 								src={
-									`https://localhost:7011/uploads/${selectedSku?.productId}/` +
 									selectedSku?.imageName
+										? `https://localhost:7011/uploads/${selectedSku?.productId}/` +
+										  selectedSku?.imageName
+										: "/productNoImage.svg"
 								}
-								// src="https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/d/i/dien-thoai-xiaomi-redmi-note-14_2__2.png"
 								alt="iPhone 12"
 								className="w-full h-full object-contain"
 							/>
@@ -285,42 +315,54 @@ export default function ProductDetails() {
 					<div>
 						<div className="p-4 font-sans">
 							<h3 className="mb-2">Chọn bộ nhớ</h3>
-							<div className="flex space-x-2 mb-4">
-								{memories.map((memory) => (
-									<div
-										key={memory}
-										className={`px-4 py-2 border-2 rounded-lg cursor-pointer ${
-											selectedMemory === memory
-												? "border-red-500 bg-red-100"
-												: "border-gray-300"
-										}`}
-										onClick={() =>
-											handleMemorySelection(memory)
-										}
-									>
-										{memory}
-									</div>
-								))}
-							</div>
+							{memories.length > 0 ? (
+								<div className="flex space-x-2 mb-4">
+									{memories.map((memory) => (
+										<div
+											key={memory}
+											className={`px-4 py-2 border-2 rounded-lg cursor-pointer ${
+												selectedMemory === memory
+													? "border-red-500 bg-red-100"
+													: "border-gray-300"
+											}`}
+											onClick={() =>
+												handleMemorySelection(memory)
+											}
+										>
+											{memory}
+										</div>
+									))}
+								</div>
+							) : (
+								<p className="ml-3 font-semibold mb-2">
+									Không có bộ nhớ nào
+								</p>
+							)}
 
 							<h3 className="mb-2">Chọn màu</h3>
-							<div className="flex space-x-2 mb-4">
-								{availableColors.map((color) => (
-									<div
-										key={color}
-										className={`px-4 py-2 border-2 rounded-lg cursor-pointer ${
-											selectedColor === color
-												? "border-red-500 bg-red-100"
-												: "border-gray-300"
-										}`}
-										onClick={() =>
-											handleColorSelection(color)
-										}
-									>
-										{color}
-									</div>
-								))}
-							</div>
+							{availableColors.length > 0 ? (
+								<div className="flex space-x-2 mb-4">
+									{availableColors.map((color) => (
+										<div
+											key={color}
+											className={`px-4 py-2 border-2 rounded-lg cursor-pointer ${
+												selectedColor === color
+													? "border-red-500 bg-red-100"
+													: "border-gray-300"
+											}`}
+											onClick={() =>
+												handleColorSelection(color)
+											}
+										>
+											{color}
+										</div>
+									))}
+								</div>
+							) : (
+								<p className="ml-3 font-semibold mb-2">
+									Không có màu nào
+								</p>
+							)}
 
 							{selectedSku && (
 								<h3 className="mt-4 text-lg font-semibold">
@@ -339,12 +381,14 @@ export default function ProductDetails() {
 							>
 								{loading ? "Đang thêm..." : "Thêm vào giỏ"}
 							</button>
-							<button
-								onClick={handleBuyNow}
-								className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
-							>
-								Mua ngay
-							</button>
+							{selectedSku && userId && (
+								<button
+									onClick={handleBuyNow}
+									className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+								>
+									Mua ngay
+								</button>
+							)}
 						</div>
 
 						<div className="border rounded-lg p-4 mb-6">

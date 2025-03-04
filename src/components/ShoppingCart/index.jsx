@@ -144,6 +144,8 @@ export default function ShoppingCart() {
 			await axios.delete(`Cart_Item/${id}`, {
 				headers: { Authorization: `Bearer ${token}` },
 			});
+			// Gửi sự kiện cập nhật giỏ hàng
+			window.dispatchEvent(new Event("cartUpdated"));
 		} catch (error) {
 			console.error("Error delete in server:", error);
 		}

@@ -8,12 +8,13 @@ const LoginForm = () => {
 		password: "",
 	});
 	const [error, setError] = useState(null);
-	const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
+	const [showForgotPasswordModal, setShowForgotPasswordModal] =
+		useState(false);
 	const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
 	const [forgotPasswordError, setForgotPasswordError] = useState(null);
 	const [forgotPasswordSuccess, setForgotPasswordSuccess] = useState(null);
 	const location = useLocation();
-    const successMessage = location.state?.successMessage || "";
+	const successMessage = location.state?.successMessage || "";
 	const navigate = useNavigate();
 
 	const handleChange = (e) => {
@@ -58,11 +59,15 @@ const LoginForm = () => {
 		setForgotPasswordSuccess(null);
 
 		try {
-			const response = await axios.post(`/Auth/forgot-password?email=${forgotPasswordEmail}&url=${window.location.origin}/reset-password`);
+			const response = await axios.post(
+				`/Auth/forgot-password?email=${forgotPasswordEmail}&url=${window.location.origin}/reset-password`
+			);
 			console.log(response.data);
 
 			if (response.data.success) {
-				setForgotPasswordSuccess("Vui lòng kiểm tra email của bạn để đặt lại mật khẩu.");
+				setForgotPasswordSuccess(
+					"Vui lòng kiểm tra email của bạn để đặt lại mật khẩu."
+				);
 				setForgotPasswordEmail("");
 				setTimeout(() => {
 					setShowForgotPasswordModal(false);
@@ -72,7 +77,8 @@ const LoginForm = () => {
 			}
 		} catch (err) {
 			setForgotPasswordError(
-				err.response?.data?.message || "Có lỗi xảy ra, vui lòng thử lại."
+				err.response?.data?.message ||
+					"Có lỗi xảy ra, vui lòng thử lại."
 			);
 		}
 	};
@@ -82,44 +88,45 @@ const LoginForm = () => {
 			{/* Left Section */}
 			<div className="flex-1 p-8 relative text-gray-800 flex flex-col z-10 justify-center">
 				<div className="absolute left-0 top-0 right-[-50%] w-full h-full bg-[#39B7CD] rounded-r-[50%] z-[-1]" />
-					<div>
-						<Link
-							to="/"
-							className="text-gray-800 inline-flex items-center mt-8 hover:opacity-80 transition-opacity"
-						>
-							← Trang chủ
-						</Link>
-					</div>
-					<div className="flex flex-col justify-center items-center h-full">
-						<Link
-							to="/"
-							className="text-gray-800 inline-flex items-center mt-8 hover:opacity-80 transition-opacity"
-						>
-							<img
-								src="/LogPhone.png"
-								alt="LogPhone Logo"
-								className="w-[200px] h-[200px] object-contain mb-6 mx-auto"
-							/>
-						</Link>
+				<div>
+					<Link
+						to="/"
+						className="text-gray-800 inline-flex items-center mt-8 hover:opacity-80 transition-opacity"
+					>
+						← Trang chủ
+					</Link>
+				</div>
+				<div className="flex flex-col justify-center items-center h-full">
+					<Link
+						to="/"
+						className="text-gray-800 inline-flex items-center mt-8 hover:opacity-80 transition-opacity"
+					>
+						<img
+							src="/LogPhone.png"
+							alt="LogPhone Logo"
+							className="w-[200px] h-[200px] object-contain mb-6 mx-auto"
+						/>
+					</Link>
 
-						<p className="text-lg leading-relaxed text-[#4F4F4F] font-bold text-center">
-							LogPhone - Hân hạnh mang đến
-							<br />
-							sản phẩm tốt nhất cho bạn.
-						</p>
-					</div>
+					<p className="text-lg leading-relaxed text-[#4F4F4F] font-bold text-center">
+						LogPhone - Hân hạnh mang đến
+						<br />
+						sản phẩm tốt nhất cho bạn.
+					</p>
+				</div>
 			</div>
 
 			{/* Right Section */}
 			<div className="flex-1 flex justify-center items-center p-8">
-
-				
 				<div className="bg-[#39B7CD] backdrop-blur-lg p-10 rounded-lg w-full max-w-[400px]">
-					{successMessage && <>
-						<p className="bg-green-100 text-green-700 border border-green-400 rounded-lg px-4 py-2 text-center">
-    						{successMessage}
-						</p>
-						<br></br></>}
+					{successMessage && (
+						<>
+							<p className="bg-green-100 text-green-700 border border-green-400 rounded-lg px-4 py-2 text-center">
+								{successMessage}
+							</p>
+							<br></br>
+						</>
+					)}
 					<form
 						onSubmit={handleSubmit}
 						className="flex flex-col gap-4"
@@ -151,7 +158,7 @@ const LoginForm = () => {
 								{error}
 							</p>
 						)}
-						
+
 						<p className="text-center text-black">
 							<button
 								type="button"
@@ -176,10 +183,15 @@ const LoginForm = () => {
 
 			{/* Forgot Password Modal */}
 			{showForgotPasswordModal && (
-				<div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+				<div className="fixed inset-0 bg-[#1e8da1] bg-opacity-50 flex justify-center items-center z-50">
 					<div className="bg-white p-8 rounded-lg w-full max-w-[400px]">
-						<h2 className="text-2xl font-bold mb-4">Quên mật khẩu</h2>
-						<form onSubmit={handleForgotPasswordSubmit} className="flex flex-col gap-4">
+						<h2 className="text-2xl font-bold mb-4">
+							Quên mật khẩu
+						</h2>
+						<form
+							onSubmit={handleForgotPasswordSubmit}
+							className="flex flex-col gap-4"
+						>
 							<input
 								type="email"
 								placeholder="Nhập email của bạn"
