@@ -3,6 +3,8 @@ import { Minus, Plus, X, ChevronLeft } from "lucide-react";
 import { Link, useNavigate, useOutletContext } from "react-router";
 import axios from "axios";
 import Loading from "../Loading";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function ShoppingCart() {
 	const [cartItems, setCartItems] = useState([]);
@@ -119,7 +121,14 @@ export default function ShoppingCart() {
 		);
 
 		if (newQuantity === currentItem.quantity) {
-			alert("Số lượng sản phẩm đã đạt giới hạn kho!");
+			toast.info("Số lượng sản phẩm đã đạt giới hạn kho!", {
+				position: "top-center",
+				autoClose: 1000,
+				hideProgressBar: false,
+				closeOnClick: true,
+				pauseOnHover: true,
+				draggable: true,
+			});
 			return;
 		}
 
@@ -178,6 +187,7 @@ export default function ShoppingCart() {
 
 	return (
 		<div className={`${cartItems.length == 0 ? "mt-20" : ""}`}>
+			<ToastContainer />
 			{!userId ? (
 				<div className="text-center text-xl text-[#3ea8c0] font-semibold">
 					Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng nhé! 💖

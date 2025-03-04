@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import Loading from "../Loading";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Profile = () => {
 	const [isEditing, setIsEditing] = useState(false);
@@ -93,8 +95,15 @@ const Profile = () => {
 		e.preventDefault();
 
 		if (password.new !== password.confirm) {
-			alert("Mật khẩu xác nhận không khớp");
-			setPassword({ current: password.current, new: "", confirm: "" });
+			toast.warning("Mật khẩu xác nhận không khớp.", {
+				position: "top-center",
+				autoClose: 1000,
+				hideProgressBar: false,
+				closeOnClick: true,
+				pauseOnHover: true,
+				draggable: true,
+			});
+			setPassword({ current: "", new: "", confirm: "" });
 			return;
 		}
 
@@ -119,7 +128,6 @@ const Profile = () => {
 			setPassword({ current: "", new: "", confirm: "" });
 		} catch (error) {
 			console.error("Lỗi khi đổi mật khẩu:", error);
-			// alert("Lỗi khi cập nhật mật khẩu:");
 			// Show error modal instead of alert
 			setModalType("error");
 			setMessageConfirmPassword(
@@ -134,6 +142,7 @@ const Profile = () => {
 
 	return (
 		<div className="max-w-2xl mx-auto mt-10 p-6 mb-8 bg-white rounded-lg shadow-md">
+			<ToastContainer />
 			{/* Password Change Modal */}
 			{showModal && (
 				<div className="fixed inset-0 bg-blue-950 bg-opacity-50 flex items-center justify-center z-50">

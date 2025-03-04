@@ -119,13 +119,7 @@ export default function ProductDetails() {
 	const [loading, setLoading] = useState(false);
 
 	const handleAddToCart = async () => {
-		if (!selectedSku) {
-			alert("Vui lòng chọn bộ nhớ và màu sắc trước khi thêm vào giỏ.");
-			return;
-		}
-
 		if (userId === null) {
-			// alert("Vui lòng đăng nhập để thêm vào giỏ hàng.");
 			toast.success("Vui lòng đăng nhập để mua hàng!", {
 				position: "top-center",
 				autoClose: 1000,
@@ -137,6 +131,24 @@ export default function ProductDetails() {
 					navigate("/login");
 				},
 			});
+			return;
+		}
+
+		if (!selectedSku) {
+			toast.info(
+				"Vui lòng chọn bộ nhớ và màu sắc trước khi thêm vào giỏ.",
+				{
+					position: "top-center",
+					autoClose: 1000,
+					hideProgressBar: false,
+					closeOnClick: true,
+					pauseOnHover: true,
+					draggable: true,
+					// onClose: () => {
+					// 	navigate("/login");
+					// },
+				}
+			);
 			return;
 		}
 
