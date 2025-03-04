@@ -1,9 +1,11 @@
 import axios from "axios";
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { CircleCheckBig, OctagonAlert } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router";
 
 const RegisterForm = () => {
 	const [formData, setFormData] = useState({
+		fullName: "",
 		email: "",
 		username: "",
 		password: "",
@@ -11,8 +13,17 @@ const RegisterForm = () => {
 	});
 
 	const [message, setMessage] = useState("");
-	const [loading, setLoading] = useState(false);
+	const [messageType, setMessageType] = useState(""); // success | error
+	const [showMessage, setShowMessage] = useState(false);
+
 	const navigate = useNavigate();
+
+	useEffect(() => {
+		if (showMessage) {
+			const timer = setTimeout(() => setShowMessage(false), 2000);
+			return () => clearTimeout(timer);
+		}
+	}, [showMessage]);
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
@@ -26,50 +37,78 @@ const RegisterForm = () => {
 		e.preventDefault();
 		if (formData.password !== formData.confirmPassword) {
 			setMessage("Mật khẩu không khớp!");
+			setMessageType("error");
+			setShowMessage(true);
 			return;
 		}
 
-		setLoading(true);
-		const encodedLink = encodeURIComponent(
-			window.location.origin + "/confirm-email-register"
-		);
-
 		try {
-			await axios.post(`/Auth/register?url=${encodedLink}`, {
+			const response = await axios.post("/Auth/register", {
 				username: formData.username,
 				email: formData.email,
 				password: formData.password,
 			});
 
-			setMessage("Đăng ký thành công! Vui lòng kiểm tra email.");
+			if (response.data.token) {
+				localStorage.setItem("token", response.data.token);
+				localStorage.setItem("role", "user");
+			}
 
-			setTimeout(() => {
-				navigate("/login", {
-					state: {
-						successMessage:
-							"Đăng ký thành công! Vui lòng kiểm tra email để xác thực trước khi đăng nhập.",
-					},
-				});
-				setLoading(false);
-			}, 2000);
+			setMessage("Đăng ký thành công! Vui lòng kiểm tra email.");
+			setMessageType("success");
+			setShowMessage(true);
+			setFormData({
+				fullName: "",
+				email: "",
+				username: "",
+				password: "",
+				confirmPassword: "",
+			});
+			navigate("/login");
 		} catch (error) {
 			console.log(error);
 			setMessage("Đăng ký thất bại. Vui lòng thử lại!");
-			setLoading(false);
+			setMessageType("error");
+			setShowMessage(true);
 		}
 	};
 
 	return (
 		<div className="min-h-screen w-full flex bg-[#39B7CD] relative overflow-hidden">
-			{/* Overlay Loading */}
-			{loading && (
-				<div className="absolute inset-0 bg-black/50 backdrop-blur-md flex justify-center items-center z-50">
-					<div className="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+			{/* Hiển thị thông báo */}
+			{showMessage && (
+				<div
+					className={`fixed top-10 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg text-white font-medium transition-all duration-300 shadow-lg ${
+						messageType === "success"
+							? "bg-green-500"
+							: "bg-red-500"
+					}`}
+				>
+					<span className="flex items-center gap-2">
+						{messageType === "success" ? (
+							<CircleCheckBig size={24} />
+						) : (
+							<OctagonAlert size={24} />
+						)}
+						{message}
+					</span>
 				</div>
 			)}
 
 			{/* Left Section */}
 			<div className="flex-1 p-8 relative text-gray-800 flex flex-col z-10">
+				<div className="flex flex-col justify-center items-center h-full">
+					<img
+						src="/LogPhone.png"
+						alt="LogPhone Logo"
+						className="w-[200px] h-[200px] object-contain mb-6"
+					/>
+
+					<p className="text-lg leading-relaxed w-[40%] text-center">
+						Đăng ký ngay để nhận được nhiều khuyến mãi đặc biệt
+					</p>
+				</div>
+
 				<div>
 					<a
 						href="/"
@@ -77,16 +116,6 @@ const RegisterForm = () => {
 					>
 						← Trang chủ
 					</a>
-				</div>
-				<div className="flex flex-col justify-center items-center h-full">
-					<img
-						src="/LogPhone.png"
-						alt="LogPhone Logo"
-						className="w-[200px] h-[200px] object-contain mb-6"
-					/>
-					<p className="text-lg leading-relaxed w-[40%] text-center">
-						Đăng ký ngay để nhận được nhiều khuyến mãi đặc biệt
-					</p>
 				</div>
 			</div>
 
@@ -100,6 +129,15 @@ const RegisterForm = () => {
 						onSubmit={handleSubmit}
 						className="flex flex-col gap-4"
 					>
+						<input
+							type="text"
+							name="fullName"
+							placeholder="Họ và tên"
+							value={formData.fullName}
+							onChange={handleChange}
+							className="p-3 rounded-md border-none bg-white focus:outline-none focus:ring-2 focus:ring-white/50"
+							required
+						/>
 						<input
 							type="email"
 							name="email"
@@ -136,15 +174,11 @@ const RegisterForm = () => {
 							className="p-3 rounded-md border-none bg-white focus:outline-none focus:ring-2 focus:ring-white/50"
 							required
 						/>
-
-						{/* Nút đăng ký hiển thị loading */}
 						<button
 							type="submit"
-							disabled={loading}
-							className={`p-3 bg-gradient-to-r from-[#2193B0] to-[#6DD5ED] text-black rounded-md font-medium cursor-pointer transition-colors mt-2
-							${loading ? "opacity-50 cursor-not-allowed" : "hover:opacity-90"}`}
+							className="p-3 bg-gradient-to-r from-[#2193B0] to-[#6DD5ED] hover:opacity-90 text-black rounded-md font-medium cursor-pointer transition-colors mt-2"
 						>
-							{loading ? "Đang xử lý..." : "Đăng ký"}
+							Đăng ký
 						</button>
 					</form>
 					<p className="text-center mt-4 text-white">
@@ -156,7 +190,6 @@ const RegisterForm = () => {
 							Đăng nhập
 						</Link>
 					</p>
-					<p className="text-center mt-4 text-red-500">{message}</p>
 				</div>
 			</div>
 		</div>

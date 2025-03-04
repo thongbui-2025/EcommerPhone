@@ -17,9 +17,15 @@ export const discountPercentage = (skus = []) => {
 		return sku?.finalPrice < min ? sku?.finalPrice : min;
 	}, skus[0]?.finalPrice);
 
-	const lowestDiscount = skus.find(
-		(sku) => sku.finalPrice === lowestFinalPrice
-	)?.discountPercentage;
+	const lowestDefaultPrice = skus.reduce((min, sku) => {
+		return sku?.defaultPrice < min ? sku?.defaultPrice : min;
+	}, skus[0]?.defaultPrice);
+
+	const lowestDiscount = Math.round(
+		((lowestDefaultPrice - lowestFinalPrice) / lowestDefaultPrice) * 100
+	);
+
+	if (lowestDiscount == 0 || lowestDiscount == null) return null;
 
 	return lowestDiscount;
 };

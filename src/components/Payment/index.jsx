@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
-import { Edit2 } from "lucide-react";
 import axios from "axios";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const Payment = () => {
 	const [selectedAddress, setSelectedAddress] = useState("default");
@@ -13,6 +12,7 @@ const Payment = () => {
 	const cartId = localStorage.getItem("cartId");
 
 	const { state } = useLocation();
+	const navigate = useNavigate();
 	const buyNowProduct = state?.buyNowProduct;
 	console.log(buyNowProduct);
 
@@ -41,7 +41,10 @@ const Payment = () => {
 			} else if (cartId) {
 				try {
 					const cartResponse = await axios.get(
-						`/Cart_Item/getSelected?cartId=${cartId}`
+						`/Cart_Item/getSelected?cartId=${cartId}`,
+						{
+							headers: { Authorization: `Bearer ${token}` },
+						}
 					);
 					const cartItemsData = cartResponse.data;
 
@@ -83,7 +86,8 @@ const Payment = () => {
 		if (cartId) {
 			fetchData();
 		}
-	}, []);
+	}, [cartId, buyNowProduct, token]);
+
 	console.log(cartItems);
 
 	const totalAmount = cartItems.reduce(
@@ -97,7 +101,7 @@ const Payment = () => {
 	};
 
 	return (
-		<div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md">
+		<div className="container mx-auto px-4 py-8 max-w-4xl p-6 bg-white rounded-lg shadow-md">
 			{/* Customer Information */}
 			<div className="mb-8">
 				<h2 className="text-xl font-bold mb-4">
@@ -106,15 +110,15 @@ const Payment = () => {
 				<div className="space-y-2">
 					<p>
 						<span className="font-semibold">Họ và tên:</span>{" "}
-						{customerInfo.fullName}
+						{customerInfo?.fullName}
 					</p>
 					<p>
 						<span className="font-semibold">Email:</span>{" "}
-						{customerInfo.email}
+						{customerInfo?.email}
 					</p>
 					<p>
 						<span className="font-semibold">Điện thoại:</span>{" "}
-						{customerInfo.phoneNumber}
+						{customerInfo?.phoneNumber}
 					</p>
 				</div>
 			</div>
@@ -201,10 +205,6 @@ const Payment = () => {
 			<div className="mb-8">
 				<div className="flex justify-between items-center mb-4">
 					<h2 className="text-xl font-bold">Đơn hàng:</h2>
-					<button className="flex items-center gap-2 px-4 py-2 bg-yellow-400 text-black rounded hover:bg-yellow-500">
-						<Edit2 className="w-4 h-4" />
-						Sửa đổi
-					</button>
 				</div>
 				<div className="border rounded">
 					<table className="w-full">
@@ -289,13 +289,18 @@ const Payment = () => {
 								pm: paymentMethod,
 								product_SKUId: buyNowProduct?.id,
 								quantity: 1,
+								returnUrl:
+									window.location.origin + "/payment-success",
 							},
+							headers: { Authorization: `Bearer ${token}` },
 						})
 						.then((response) => {
 							if (paymentMethod === 1) {
-								window.open(response.data, "_blank"); // Opens in a new window/tab
+								window.open(response.data, "_blank");
+								navigate("/purchase-history");
 							} else {
 								// Handle other payment methods here
+								navigate("/");
 								console.log("Other payment method selected.");
 							}
 						})
@@ -303,9 +308,9 @@ const Payment = () => {
 							console.error("Lỗi khi lấy dữ liệu:", error)
 						);
 				}}
-				className="w-full bg-red-600 text-white py-3 rounded font-bold hover:bg-red-700 transition-colors"
+				className="w-full bg-red-600 text-white py-3 rounded font-bold cursor-pointer hover:bg-red-700 transition-colors"
 			>
-				HOÀN TẤT ĐẶT HÀNG
+				XÁC NHẬN ĐẶT HÀNG
 			</button>
 		</div>
 	);

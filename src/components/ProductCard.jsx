@@ -54,16 +54,21 @@ const ProductCard = ({ product, isFavorite, toggleFavorite, heart }) => {
 						{product?.name}
 					</h3>
 					<p className="text-red-600  text-xl font-bold mb-1">
-						{formatPrice(lowestFinalPrice(product?.skus)) || 0}
+						{formatPrice(lowestFinalPrice(product?.skus)) ||
+							"Hết hàng"}
 					</p>
 					<div className="flex justify-center gap-3">
 						<p className="text-[#a4a4a4] text-sm line-through font-normal">
-							{formatPrice(lowestDefaultPrice(product?.skus)) ||
-								0}
+							{formatPrice(lowestDefaultPrice(product?.skus))}
 						</p>
-						<span className="text-red-500 text-sm">
-							-{discountPercentage(product?.skus) || 0}%
-						</span>
+
+						{discountPercentage(product?.skus) ? (
+							<span className="text-red-500 text-sm">
+								-{discountPercentage(product?.skus)}%
+							</span>
+						) : (
+							<span className="text-red-500 text-sm">&nbsp;</span>
+						)}
 					</div>
 				</div>
 			</div>

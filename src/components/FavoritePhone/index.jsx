@@ -16,10 +16,14 @@ const FavoritePhone = () => {
 
 	const navigate = useNavigate();
 
+	const token = localStorage.getItem("token");
+
 	useEffect(() => {
 		setIsLoadingWishlist(true);
 		Promise.all([
-			axios.get(`/Products/wishlist/${userId}`),
+			axios.get(`/Products/wishlist/${userId}`, {
+				headers: { Authorization: `Bearer ${token}` },
+			}),
 			axios.get("/Product_Image"),
 			axios.get("/Product_SKU"),
 		])

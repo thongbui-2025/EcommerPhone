@@ -16,13 +16,18 @@ export default function ShoppingCart() {
 
 	const [isLoadingCart, setIsLoadingCart] = useState(false); // Loading khi state  chưa update
 
+	const token = localStorage.getItem("token");
+
 	useEffect(() => {
 		setIsLoadingCart(true);
 		const fetchData = async () => {
 			try {
 				// Lấy danh sách sản phẩm trong giỏ hàng
 				const cartResponse = await axios.get(
-					`/Cart_Item?cartId=${cartId}`
+					`/Cart_Item?cartId=${cartId}`,
+					{
+						headers: { Authorization: `Bearer ${token}` },
+					}
 				);
 				const cartItemsData = cartResponse.data;
 
@@ -65,7 +70,7 @@ export default function ShoppingCart() {
 		if (cartId) {
 			fetchData();
 		}
-	}, [cartId]); // Chỉ chạy lại khi cartId thay đổi
+	}, [cartId, token]); // Chỉ chạy lại khi cartId thay đổi
 
 	const selectedItems = cartItems.filter((item) => item.isSelect);
 	console.log(selectedItems);
@@ -90,7 +95,11 @@ export default function ShoppingCart() {
 			);
 
 			await axios.put(
-				`Cart_Item/select/${itemId}?select=${newSelectStatus}`
+				`Cart_Item/select/${itemId}?select=${newSelectStatus}`,
+				null,
+				{
+					headers: { Authorization: `Bearer ${token}` },
+				}
 			);
 		} catch (error) {
 			console.error("Error updating item selection:", error);
@@ -121,14 +130,23 @@ export default function ShoppingCart() {
 		);
 
 		try {
-			await axios.put(`Cart_Item/${id}?amount=${change}`);
+			await axios.put(`Cart_Item/${id}?amount=${change}`, null, {
+				headers: { Authorization: `Bearer ${token}` },
+			});
 		} catch (error) {
 			console.error("Error updating quantity in backend:", error);
 		}
 	};
 
-	const removeItem = (id) => {
+	const removeItem = async (id) => {
 		setCartItems((items) => items.filter((item) => item.id !== id));
+		try {
+			await axios.delete(`Cart_Item/${id}`, {
+				headers: { Authorization: `Bearer ${token}` },
+			});
+		} catch (error) {
+			console.error("Error delete in server:", error);
+		}
 	};
 
 	const formatPrice = (price) => {
@@ -153,6 +171,8 @@ export default function ShoppingCart() {
 			handleSmooth();
 		}, 300);
 	};
+
+	console.log("cartItems", cartItems);
 
 	return (
 		<div className={`${cartItems.length == 0 ? "mt-20" : ""}`}>
@@ -194,8 +214,10 @@ export default function ShoppingCart() {
 												<div className="flex items-center gap-4">
 													<img
 														src={
-															item.image ||
-															"https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/42/329135/iphone-16-trang-2-638639086192667063-750x500.jpg"
+															item?.product_SKU
+																?.imageName
+																? `https://localhost:7011/uploads/${item?.product?.id}/${item?.product_SKU?.imageName}`
+																: "/productNoImage.svg"
 														}
 														alt={item.name}
 														className="w-20 h-20 object-cover rounded-lg"
@@ -300,19 +322,16 @@ export default function ShoppingCart() {
 								Quay lại
 							</button>
 							<Link to="/cart/payment-info">
-								<button className="px-6 py-2 bg-gradient-to-r from-[#2193B0] to-[#6DD5ED] text-white rounded-lg hover:from-[#6DD5ED] hover:to-[#2193B0] transition-colors cursor-pointer">
+								<button
+									className={`px-6 py-2 rounded-lg transition-colors cursor-pointer ${
+										totalSelectedPrice === 0
+											? "bg-gray-400 cursor-not-allowed"
+											: "bg-gradient-to-r from-[#2193B0] to-[#6DD5ED] text-white hover:from-[#6DD5ED] hover:to-[#2193B0]"
+									}`}
+									disabled={totalSelectedPrice === 0}
+								>
 									Mua hàng
 								</button>
-								{/* <button
-								className={`px-6 py-2 ${
-									selectedItems.length === 0
-										? "bg-gray-400 cursor-not-allowed"
-										: "bg-gradient-to-r from-[#2193B0] to-[#6DD5ED] hover:from-[#6DD5ED] hover:to-[#2193B0]"
-								} text-white rounded-lg transition-colors`}
-								disabled={selectedItems.length === 0}
-							>
-								Mua hàng
-							</button> */}
 							</Link>
 						</div>
 					</div>

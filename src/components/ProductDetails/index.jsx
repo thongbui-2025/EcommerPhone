@@ -18,6 +18,12 @@ export default function ProductDetails() {
 	const [selectedSku, setSelectedSku] = useState(null);
 	const navigate = useNavigate();
 
+	// Modal state
+	const [showModal, setShowModal] = useState(false);
+	const [modalMessage, setModalMessage] = useState("");
+	const [modalType, setModalType] = useState("success"); // success or error
+	const token = localStorage.getItem("token");
+
 	useEffect(() => {
 		Promise.all([
 			axios.get("/Products/" + id),
@@ -113,13 +119,24 @@ export default function ProductDetails() {
 					cartId: cartId,
 					product_SKUId: selectedSku.id,
 				},
+
+				headers: { Authorization: `Bearer ${token}` },
 			});
 			console.log("Added to cart:", response.data);
-			alert("Thêm vào giỏ hàng thành công!");
-			navigate("/cart");
+			// Show success modal instead of alert
+			setModalType("success");
+			setModalMessage("Thêm vào giỏ hàng thành công!");
+			setShowModal(true);
+
+			// Gửi sự kiện cập nhật giỏ hàng
+			window.dispatchEvent(new Event("cartUpdated"));
 		} catch (error) {
 			console.error("Error adding to cart:", error);
-			alert("Có lỗi xảy ra khi thêm vào giỏ.");
+
+			// Show error modal instead of alert
+			setModalType("error");
+			setModalMessage("Có lỗi xảy ra khi thêm vào giỏ.");
+			setShowModal(true);
 		} finally {
 			setLoading(false);
 		}
@@ -133,6 +150,89 @@ export default function ProductDetails() {
 
 	return (
 		<div className="container mx-auto px-4 py-8 max-w-6xl">
+			{/* Modal Component */}
+			{/* Modal Component */}
+			{showModal && (
+				<div className="fixed inset-0 flex items-center justify-center z-50">
+					<div
+						className="absolute inset-0 bg-black opacity-50"
+						onClick={() => setShowModal(false)}
+					></div>
+					<div className="bg-white rounded-lg p-6 shadow-xl z-10 max-w-md w-full">
+						<div
+							className={`text-center ${
+								modalType === "success"
+									? "text-green-600"
+									: "text-red-600"
+							}`}
+						>
+							<div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+								{modalType === "success" ? (
+									<svg
+										className="h-6 w-6 text-green-600"
+										fill="none"
+										viewBox="0 0 24 24"
+										stroke="currentColor"
+									>
+										<path
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											strokeWidth="2"
+											d="M5 13l4 4L19 7"
+										/>
+									</svg>
+								) : (
+									<svg
+										className="h-6 w-6 text-red-600"
+										fill="none"
+										viewBox="0 0 24 24"
+										stroke="currentColor"
+									>
+										<path
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											strokeWidth="2"
+											d="M6 18L18 6M6 6l12 12"
+										/>
+									</svg>
+								)}
+							</div>
+							<h3 className="text-lg font-medium mb-2">
+								{modalType === "success" ? "Thành công" : "Lỗi"}
+							</h3>
+							<p className="text-sm text-gray-500">
+								{modalMessage}
+							</p>
+							{modalType === "success" ? (
+								<div className="flex justify-center gap-4 mt-4">
+									<button
+										className="px-4 py-2 rounded-md bg-gray-200 text-gray-800 hover:bg-gray-300"
+										onClick={() => setShowModal(false)}
+									>
+										Tiếp tục mua hàng
+									</button>
+									<button
+										className="px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700"
+										onClick={() => {
+											setShowModal(false);
+											navigate("/cart");
+										}}
+									>
+										Đến giỏ hàng
+									</button>
+								</div>
+							) : (
+								<button
+									className="mt-4 px-4 py-2 rounded-md bg-red-600 text-white"
+									onClick={() => setShowModal(false)}
+								>
+									Đóng
+								</button>
+							)}
+						</div>
+					</div>
+				</div>
+			)}
 			<div className="bg-white rounded-lg shadow-sm p-6">
 				<div className="grid md:grid-cols-2 gap-8">
 					{/* Left Column - Product Image */}

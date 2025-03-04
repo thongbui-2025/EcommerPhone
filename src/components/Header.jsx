@@ -16,8 +16,11 @@ const Header = ({
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 	const navigate = useNavigate();
 
-	const [cartCount, setCartCount] = useState(0);
+	const [cartCount, setCartCount] = useState(() => {
+		return parseInt(localStorage.getItem("cartCount")) || 0;
+	});
 	const cartId = localStorage.getItem("cartId");
+	const token = localStorage.getItem("token");
 
 	const dropdownRef = useRef(null);
 
@@ -35,11 +38,37 @@ const Header = ({
 	// Lấy số lượng sản phẩm trong giỏ hàng
 	useEffect(() => {
 		axios
-			.get(`/Cart_Item?cartId=${cartId}`)
-			.then((response) => setCartCount(response.data.length))
+			.get(`/Cart_Item?cartId=${cartId}`, {
+				headers: { Authorization: `Bearer ${token}` },
+			})
+			.then((response) => {
+				setCartCount(response.data.length);
+				localStorage.setItem("cartCount", response.data.length);
+			})
 			.catch((error) =>
 				console.error("Error fetching cart data:", error)
 			);
+	}, [cartId, token]);
+
+	// Lắng nghe sự kiện "cartUpdated"
+	useEffect(() => {
+		const updateCartCount = () => {
+			axios
+				.get(`/Cart_Item?cartId=${cartId}`, {
+					headers: { Authorization: `Bearer ${token}` },
+				})
+				.then((response) => {
+					setCartCount(response.data.length);
+					localStorage.setItem("cartCount", response.data.length);
+				})
+				.catch((error) =>
+					console.error("Error fetching cart data:", error)
+				);
+		};
+
+		window.addEventListener("cartUpdated", updateCartCount);
+
+		return () => window.removeEventListener("cartUpdated", updateCartCount);
 	}, [cartId]);
 
 	const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);

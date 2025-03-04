@@ -49,6 +49,7 @@ export default function Homepage() {
 		useOutletContext();
 
 	const userId = localStorage.getItem("userId");
+	const token = localStorage.getItem("token");
 
 	const location = useLocation();
 
@@ -148,7 +149,10 @@ export default function Homepage() {
 		const fetchFavorites = async () => {
 			try {
 				const response = await axios.get(
-					`/Products/wishlist/${userId}`
+					`/Products/wishlist/${userId}`,
+					{
+						headers: { Authorization: `Bearer ${token}` },
+					}
 				);
 				setIsFavorite(response.data); // chứa danh sách yêu thích từ server
 			} catch (error) {
@@ -157,7 +161,7 @@ export default function Homepage() {
 		};
 
 		fetchFavorites();
-	}, [userId]);
+	}, [userId, token]);
 
 	const filterProducts = (products) => {
 		let filtered = [...products];
@@ -184,7 +188,7 @@ export default function Homepage() {
 				Number.POSITIVE_INFINITY,
 			];
 			filtered = filtered.filter((product) => {
-				const price = product?.skus[0]?.defaultPrice || 0;
+				const price = product?.skus[0]?.finalPrice || 0;
 				return price >= min && price <= max;
 			});
 		}
@@ -194,15 +198,15 @@ export default function Homepage() {
 			case "price-asc":
 				filtered.sort(
 					(a, b) =>
-						(a?.skus[0]?.defaultPrice || 0) -
-						(b?.skus[0]?.defaultPrice || 0)
+						(a?.skus[0]?.finalPrice || 0) -
+						(b?.skus[0]?.finalPrice || 0)
 				);
 				break;
 			case "price-desc":
 				filtered.sort(
 					(a, b) =>
-						(b?.skus[0]?.defaultPrice || 0) -
-						(a?.skus[0]?.defaultPrice || 0)
+						(b?.skus[0]?.finalPrice || 0) -
+						(a?.skus[0]?.finalPrice || 0)
 				);
 				break;
 			default:
@@ -233,8 +237,14 @@ export default function Homepage() {
 	// Handle sản phẩm tym
 	const toggleFavorite = async (product) => {
 		try {
+			console.log("token", token);
+
 			await axios.post(
-				`/Products/wishlist?userId=${userId}&productId=${product.id}`
+				`/Products/wishlist?userId=${userId}&productId=${product.id}`,
+				{},
+				{
+					headers: { Authorization: `Bearer ${token}` },
+				}
 			);
 
 			const isFav = isFavorite.some((item) => item.id === product.id);
