@@ -79,10 +79,10 @@ const CategoryManagement = () => {
 			});
 	};
 
-	const handleDeleteClick = (category) => {
-		setCategoryToDelete(category);
-		setShowDeleteConfirmation(true);
-	};
+	// const handleDeleteClick = (category) => {
+	// 	setCategoryToDelete(category);
+	// 	setShowDeleteConfirmation(true);
+	// };
 
 	const handleCancelDelete = () => {
 		setShowDeleteConfirmation(false);
@@ -170,7 +170,7 @@ const CategoryManagement = () => {
 														>
 															Cập nhật
 														</button>
-														<span>|</span>
+														{/* <span>|</span>
 														<button
 															className="text-red-500 hover:underline"
 															onClick={() =>
@@ -180,7 +180,7 @@ const CategoryManagement = () => {
 															}
 														>
 															Xóa
-														</button>
+														</button> */}
 													</div>
 												</td>
 											</tr>

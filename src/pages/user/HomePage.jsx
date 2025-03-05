@@ -16,15 +16,6 @@ const CustomPrevArrow = ({ onClick }) => (
 	</button>
 );
 
-const priceRanges = [
-	{ id: "all", label: "Tất cả" },
-	{ id: "under5m", label: "Dưới 5 triệu" },
-	{ id: "5mto9m", label: "Từ 5 đến 9 triệu" },
-	{ id: "9mto15m", label: "Từ 9 đến 15 triệu" },
-	{ id: "15mto20m", label: "Từ 15 đến 20 triệu" },
-	{ id: "above20m", label: "Trên 20 triệu" },
-];
-
 const CustomNextArrow = ({ onClick }) => (
 	<button
 		onClick={onClick}
@@ -33,6 +24,15 @@ const CustomNextArrow = ({ onClick }) => (
 		<ChevronRight className="h-6 w-6" />
 	</button>
 );
+
+const priceRanges = [
+	{ id: "all", label: "Tất cả" },
+	{ id: "under5m", label: "Dưới 5 triệu" },
+	{ id: "5mto9m", label: "Từ 5 đến 9 triệu" },
+	{ id: "9mto15m", label: "Từ 9 đến 15 triệu" },
+	{ id: "15mto20m", label: "Từ 15 đến 20 triệu" },
+	{ id: "above20m", label: "Trên 20 triệu" },
+];
 
 export default function Homepage() {
 	const [products, setProducts] = useState([]);
@@ -56,10 +56,15 @@ export default function Homepage() {
 	const bannerSettings = {
 		dots: true,
 		infinite: true,
-		speed: 500,
+		speed: 600,
 		slidesToShow: 1,
 		slidesToScroll: 1,
 		autoplay: true,
+		fade: true, // Dùng fade thay vì slide
+		// beforeChange: (current, next) => {
+		// 	// Kiểm soát animation nếu cần
+		// 	console.log("Slide từ", current, "->", next);
+		// },
 		prevArrow: <CustomPrevArrow />,
 		nextArrow: <CustomNextArrow />,
 	};
@@ -265,19 +270,26 @@ export default function Homepage() {
 	return (
 		<div className="container mx-auto px-4 py-8">
 			{/* Banner Slider */}
-			<div className="mb-12">
+			<div className="mb-12 overflow-hidden rounded-lg">
 				<Slider {...bannerSettings}>
-					<div className="px-1">
+					<div className="px-1 overflow-hidden rounded-lg">
 						<img
 							src="//cdnv2.tgdd.vn/mwg-static/tgdd/Banner/ba/41/ba415d5d06238f5db1b8ddb6be96f912.png"
-							alt="Slibar 1"
+							alt="Slider 1"
 							className="w-full h-[500px] object-cover rounded-lg"
 						/>
 					</div>
-					<div className="px-1">
+					<div className="px-1 overflow-hidden rounded-lg">
 						<img
 							src="//cdnv2.tgdd.vn/mwg-static/tgdd/Banner/b3/ce/b3ce717a1c17f16577fa1ca990300272.png"
-							alt="Slibar 2"
+							alt="Slider 2"
+							className="w-full h-[500px] object-cover rounded-lg"
+						/>
+					</div>
+					<div className="px-1 overflow-hidden rounded-lg">
+						<img
+							src="https://cdnv2.tgdd.vn/mwg-static/tgdd/Banner/1a/f8/1af8b112ae6b4c90162e0bf4f79b52c1.png"
+							alt="Slider 3"
 							className="w-full h-[500px] object-cover rounded-lg"
 						/>
 					</div>

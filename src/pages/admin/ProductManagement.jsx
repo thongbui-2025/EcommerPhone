@@ -264,10 +264,10 @@ const ProductManagement = () => {
 		}
 	};
 
-	const handleDeleteClick = (product) => {
-		setProductToDelete(product);
-		setShowDeleteConfirmation(true);
-	};
+	// const handleDeleteClick = (product) => {
+	// 	setProductToDelete(product);
+	// 	setShowDeleteConfirmation(true);
+	// };
 
 	const handleConfirmDelete = () => {
 		setProducts((prevProducts) =>
@@ -443,7 +443,7 @@ const ProductManagement = () => {
 														>
 															Cập nhật
 														</button>
-														<span>|</span>
+														{/* <span>|</span>
 														<button
 															className="text-red-500 hover:underline"
 															onClick={() =>
@@ -453,7 +453,7 @@ const ProductManagement = () => {
 															}
 														>
 															Xóa
-														</button>
+														</button> */}
 													</div>
 												</td>
 											</tr>
