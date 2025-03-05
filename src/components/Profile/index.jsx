@@ -9,6 +9,8 @@ import {
 	Edit2,
 	Save,
 	SquareX,
+	EyeOff,
+	Eye,
 } from "lucide-react";
 import axios from "axios";
 import Loading from "../Loading";
@@ -23,6 +25,11 @@ const Profile = () => {
 	const [showModal, setShowModal] = useState(false);
 	const [messageConfirmPassword, setMessageConfirmPassword] = useState("");
 	const [modalType, setModalType] = useState("success"); // success or error
+	const [showPassword, setShowPassword] = useState({
+		current: false,
+		new: false,
+		confirm: false,
+	});
 	const [password, setPassword] = useState({
 		current: "",
 		new: "",
@@ -138,6 +145,10 @@ const Profile = () => {
 		}
 		setIsEditing(false);
 		setShowPasswordChange(false);
+	};
+
+	const toggleShowPassword = (field) => {
+		setShowPassword((prev) => ({ ...prev, [field]: !prev[field] }));
 	};
 
 	return (
@@ -287,42 +298,45 @@ const Profile = () => {
 				{showPasswordChange && (
 					<div className="mt-6 space-y-4">
 						<h2 className="text-xl font-semibold">Đổi mật khẩu</h2>
-						<div className="flex items-center">
-							<Lock className="w-6 h-6 mr-2" />
-							<label className="w-32">Mật khẩu hiện tại:</label>
-							<input
-								type="password"
-								name="current"
-								value={password.current}
-								required
-								onChange={handlePasswordChange}
-								className="flex-1 p-2 border rounded"
-							/>
-						</div>
-						<div className="flex items-center">
-							<Lock className="w-6 h-6 mr-2" />
-							<label className="w-32">Mật khẩu mới:</label>
-							<input
-								type="password"
-								name="new"
-								required
-								value={password.new}
-								onChange={handlePasswordChange}
-								className="flex-1 p-2 border rounded"
-							/>
-						</div>
-						<div className="flex items-center">
-							<Lock className="w-6 h-6 mr-2" />
-							<label className="w-32">Xác nhận mật khẩu:</label>
-							<input
-								type="password"
-								name="confirm"
-								required
-								value={password.confirm}
-								onChange={handlePasswordChange}
-								className="flex-1 p-2 border rounded"
-							/>
-						</div>
+						{["current", "new", "confirm"].map((field, index) => (
+							<div className="flex items-center" key={index}>
+								<Lock className="w-6 h-6 mr-2" />
+								<label className="w-32">
+									{field === "current"
+										? "Mật khẩu hiện tại"
+										: field === "new"
+										? "Mật khẩu mới"
+										: "Xác nhận mật khẩu"}
+								</label>
+								<div className="relative flex-1">
+									<input
+										type={
+											showPassword[field]
+												? "text"
+												: "password"
+										}
+										name={field}
+										value={password[field]}
+										onChange={handlePasswordChange}
+										className="w-full p-2 border rounded"
+										required
+									/>
+									<button
+										type="button"
+										onClick={() =>
+											toggleShowPassword(field)
+										}
+										className="absolute right-3 top-2.5"
+									>
+										{showPassword[field] ? (
+											<Eye size={20} />
+										) : (
+											<EyeOff size={20} />
+										)}
+									</button>
+								</div>
+							</div>
+						))}
 					</div>
 				)}
 

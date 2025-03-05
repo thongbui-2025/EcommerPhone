@@ -327,8 +327,8 @@ const PurchaseHistory = () => {
 							Xác nhận hủy đơn hàng
 						</h2>
 						<p className="mb-4">
-							Bạn có chắc chắn muốn hủy đơn hàng này{" "}
-							{orderToDelete}?
+							Bạn có chắc chắn muốn hủy đơn hàng này?{" "}
+							{/* {orderToDelete}? */}
 						</p>
 						<div className="flex justify-end space-x-2">
 							<button
