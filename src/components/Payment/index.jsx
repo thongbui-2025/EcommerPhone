@@ -1,27 +1,27 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { useLocation, useNavigate } from "react-router-dom";
-import { formatPrice } from "../../utils/formatPrice";
+import { useLocation } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-// import { useOutletContext } from "react-router";
 
 const Payment = () => {
-	const [selectedAddress, setSelectedAddress] = useState("default");
-	const [customAddress, setCustomAddress] = useState("");
+	const [defaultAddress, setDefaultAddress] = useState([]);
 	const [paymentMethod, setPaymentMethod] = useState(0);
 	const [customerInfo, setCustomerInfo] = useState([]);
 	const [cartItems, setCartItems] = useState([]);
+	const [addresses, setAddresses] = useState([]);
 	const [isModalOpen, setIsModalOpen] = useState(false);
+	const [isModalOrderOpen, setIsModalOrderOpen] = useState(false);
+
 	const token = localStorage.getItem("token");
 	const cartId = localStorage.getItem("cartId");
+	const userId = localStorage.getItem("userId");
 
 	const { state } = useLocation();
 	const navigate = useNavigate();
 	const buyNowProduct = state?.buyNowProduct;
 	console.log(buyNowProduct);
-
-	// const { handleSmooth } = useOutletContext();
 
 	useEffect(() => {
 		axios
@@ -29,6 +29,24 @@ const Payment = () => {
 				headers: { Authorization: `Bearer ${token}` },
 			})
 			.then((response) => setCustomerInfo(response.data))
+			.catch((error) => console.error("Lỗi khi lấy dữ liệu:", error));
+
+		axios
+			.get("/Address/getByUser/" + userId, {
+				headers: { Authorization: `Bearer ${token}` },
+			})
+			.then((response) => {
+				const addresses = response.data;
+				setAddresses(addresses);
+
+				// Tìm địa chỉ có thuộc tính default = true
+				const dfAddress = addresses.find(
+					(address) => address.default === true
+				);
+				if (dfAddress) {
+					setDefaultAddress(dfAddress);
+				}
+			})
 			.catch((error) => console.error("Lỗi khi lấy dữ liệu:", error));
 
 		const fetchData = async () => {
@@ -93,9 +111,10 @@ const Payment = () => {
 		if (cartId) {
 			fetchData();
 		}
-	}, [cartId, buyNowProduct, token]);
-
+	}, []);
 	console.log(cartItems);
+	console.log(addresses);
+	console.log(defaultAddress);
 
 	const totalAmount = cartItems.reduce(
 		(sum, item) =>
@@ -103,64 +122,16 @@ const Payment = () => {
 		0
 	);
 
-	// const formatPrice = (price) => {
-	// 	return new Intl.NumberFormat("vi-VN").format(price) + " đ";
-	// };
-	const handleConfirmOrder = () => {
-		axios
-			.post(`/Cart_Item/Purchase`, null, {
-				params: {
-					userId: customerInfo.id,
-					cartId: cartId,
-					name: customerInfo.fullName,
-					phoneNumber: customerInfo.phoneNumber,
-					address:
-						selectedAddress === "custom"
-							? customAddress
-							: customerInfo.address,
-					pm: paymentMethod,
-					product_SKUId: buyNowProduct?.id,
-					quantity: 1,
-					returnUrl: window.location.origin + "/payment-success",
-				},
-				headers: { Authorization: `Bearer ${token}` },
-			})
-			.then((response) => {
-				if (paymentMethod === 1) {
-					window.open(response.data, "_blank");
-					navigate("/purchase-history");
-				} else {
-					// Handle other payment methods here
-					// Show success modal and then navigate to home page
-					setIsModalOpen(true);
-					toast.success("Đặt hàng thành công!", {
-						position: "top-center",
-						autoClose: 2000,
-						hideProgressBar: false,
-						closeOnClick: true,
-						pauseOnHover: true,
-						draggable: true,
-						onClose: () => {
-							navigate("/purchase-history");
-							// setTimeout(() => {
-							// 	handleSmooth();
-							// }, 300);
-						},
-					});
-					// Gửi sự kiện cập nhật giỏ hàng
-					window.dispatchEvent(new Event("cartUpdated"));
-				}
-			})
-			.catch((error) => console.error("Lỗi khi lấy dữ liệu:", error));
+	const formatPrice = (price) => {
+		return new Intl.NumberFormat("vi-VN").format(price) + " đ";
 	};
 
 	return (
 		<div className="container mx-auto px-4 py-8 max-w-4xl p-6 bg-white rounded-lg shadow-md">
 			{/* Toast Container for notifications */}
 			<ToastContainer />
-
 			{/* Success Modal */}
-			{isModalOpen && (
+			{isModalOrderOpen && (
 				<div className="fixed inset-0 bg-blue-900 bg-opacity-50 flex items-center justify-center z-50">
 					<div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full border-t-4 border-green-500">
 						<div className="flex items-center mb-4">
@@ -191,8 +162,8 @@ const Payment = () => {
 						<div className="flex justify-end">
 							<button
 								onClick={() => {
-									setIsModalOpen(false);
-									navigate("/");
+									setIsModalOrderOpen(false);
+									navigate("/purchase-history");
 								}}
 								className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
 							>
@@ -202,69 +173,110 @@ const Payment = () => {
 					</div>
 				</div>
 			)}
-			{/* Customer Information */}
-			<div className="mb-8">
-				<h2 className="text-xl font-bold mb-4">
-					Thông tin khách hàng:
-				</h2>
-				<div className="space-y-2">
-					<p>
-						<span className="font-semibold">Họ và tên:</span>{" "}
-						{customerInfo?.fullName}
-					</p>
-					<p>
-						<span className="font-semibold">Email:</span>{" "}
-						{customerInfo?.email}
-					</p>
-					<p>
-						<span className="font-semibold">Điện thoại:</span>{" "}
-						{customerInfo?.phoneNumber}
-					</p>
-				</div>
-			</div>
-
 			{/* Delivery Address */}
 			<div className="mb-8">
-				<h2 className="text-xl font-bold mb-4">Địa chỉ giao hàng:</h2>
-				<div className="space-y-4">
-					<div className="flex items-center gap-2">
-						<input
-							type="radio"
-							id="defaultAddress"
-							name="address"
-							checked={selectedAddress === "default"}
-							onChange={() => setSelectedAddress("default")}
-							className="w-4 h-4"
-						/>
-						<label htmlFor="defaultAddress">Địa chỉ mặc định</label>
-					</div>
-					{selectedAddress === "default" && (
-						<div className="ml-6 p-2 bg-gray-50 rounded">
-							{customerInfo.address}
+				<h2 className="text-xl font-bold mb-4 text-red-600 flex items-center">
+					📍 Địa Chỉ Nhận Hàng
+				</h2>
+				<div className="bg-white p-4 rounded-lg shadow-md border border-gray-300">
+					{addresses.length > 0 ? (
+						<div className="flex justify-between items-center">
+							<div>
+								<p className="font-semibold text-lg">
+									{defaultAddress.name}{" "}
+									<span className="text-gray-600">
+										{" "}
+										{defaultAddress.phoneNumber}
+									</span>
+								</p>
+								<p className="text-gray-700">
+									{defaultAddress.street},{" "}
+									{defaultAddress.ward},{" "}
+									{defaultAddress.district},{" "}
+									{defaultAddress.city}
+								</p>
+								{defaultAddress.default && (
+									<span className="text-red-600 border border-red-500 px-2 py-1 text-sm rounded-md inline-block mt-2">
+										Mặc Định
+									</span>
+								)}
+							</div>
+							<button
+								className="text-blue-600 hover:underline"
+								onClick={() => setIsModalOpen(true)}
+							>
+								Thay Đổi
+							</button>
+						</div>
+					) : (
+						<div>
+							Bạn chưa có địa chỉ nào nhấn vào{" "}
+							<a href="/address" className="text-blue-600">
+								{" "}
+								đây
+							</a>{" "}
+							để quản lý địa chỉ.
 						</div>
 					)}
-
-					<div className="flex items-center gap-2">
-						<input
-							type="radio"
-							id="customAddress"
-							name="address"
-							checked={selectedAddress === "custom"}
-							onChange={() => setSelectedAddress("custom")}
-							className="w-4 h-4"
-						/>
-						<label htmlFor="customAddress">Địa chỉ khác</label>
-					</div>
-					{selectedAddress === "custom" && (
-						<input
-							type="text"
-							value={customAddress}
-							onChange={(e) => setCustomAddress(e.target.value)}
-							placeholder="Nhập địa chỉ khác"
-							className="ml-6 w-full p-2 border rounded"
-						/>
-					)}
 				</div>
+
+				{/* Modal */}
+				{isModalOpen && (
+					<div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+						<div className="bg-white p-6 rounded-lg shadow-lg w-96">
+							<h3 className="text-lg font-semibold mb-4">
+								Chọn Địa Chỉ Nhận Hàng
+							</h3>
+							<ul className="space-y-2">
+								{addresses.map((address) => (
+									<li
+										key={address.id}
+										className="p-2 border rounded flex justify-between items-center"
+									>
+										<div>
+											<p className="font-semibold">
+												{address.name} (
+												{address.phoneNumber})
+											</p>
+											<p className="text-sm text-gray-600">
+												{address.street}, {address.ward}
+												, {address.district},{" "}
+												{address.city}
+											</p>
+										</div>
+										<button
+											className="text-green-600 hover:underline"
+											onClick={() => {
+												console.log(
+													"Chọn địa chỉ:",
+													address
+												);
+												setDefaultAddress(address);
+												setIsModalOpen(false); // Đóng modal khi chọn địa chỉ
+											}}
+										>
+											Chọn
+										</button>
+									</li>
+								))}
+							</ul>
+							<div className="mt-4 flex flex-col space-y-2">
+								<button
+									className="w-full py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+									onClick={() => navigate("/address")}
+								>
+									Quản Lý Địa Chỉ
+								</button>
+								<button
+									className="w-full py-2 bg-gray-300 rounded-lg"
+									onClick={() => setIsModalOpen(false)}
+								>
+									Đóng
+								</button>
+							</div>
+						</div>
+					</div>
+				)}
 			</div>
 
 			{/* Payment Method */}
@@ -323,14 +335,6 @@ const Payment = () => {
 								>
 									<td className="p-4">
 										<div className="flex items-center gap-4">
-											{/* <img
-												src={
-													product.image ||
-													"/placeholder.svg"
-												}
-												alt={product.name}
-												className="w-16 h-16 object-cover rounded"
-											/> */}
 											<div>
 												<span className="font-medium block">
 													{item.product?.name ||
@@ -374,10 +378,58 @@ const Payment = () => {
 
 			{/* Complete Order Button */}
 			<button
-				onClick={handleConfirmOrder}
-				className="w-full bg-red-600 text-white py-3 rounded font-bold cursor-pointer hover:bg-red-700 transition-colors"
+				onClick={() => {
+					axios
+						.post(`/Cart_Item/Purchase`, null, {
+							params: {
+								userId: customerInfo.id,
+								cartId: cartId,
+								name: defaultAddress.name,
+								phoneNumber: defaultAddress.phoneNumber,
+								address: `${defaultAddress.street}, ${defaultAddress.ward}, ${defaultAddress.district}, ${defaultAddress.city}`,
+								pm: paymentMethod,
+								product_SKUId: buyNowProduct?.id,
+								quantity: 1,
+							},
+							headers: { Authorization: `Bearer ${token}` },
+						})
+						.then((response) => {
+							if (paymentMethod === 1) {
+								window.open(response.data, "_blank"); // Opens in a new window/tab
+							} else {
+								// Handle other payment methods here
+								// Show success modal and then navigate to home page
+								setIsModalOrderOpen(true);
+								toast.success("Đặt hàng thành công!", {
+									position: "top-center",
+									autoClose: 2000,
+									hideProgressBar: false,
+									closeOnClick: true,
+									pauseOnHover: true,
+									draggable: true,
+									onClose: () => {
+										navigate("/purchase-history");
+										// setTimeout(() => {
+										// 	handleSmooth();
+										// }, 300);
+									},
+								});
+								// Gửi sự kiện cập nhật giỏ hàng
+								window.dispatchEvent(new Event("cartUpdated"));
+							}
+						})
+						.catch((error) =>
+							console.error("Lỗi khi lấy dữ liệu:", error)
+						);
+				}}
+				className={`w-full py-3 rounded font-bold transition-colors ${
+					addresses.length > 0
+						? "bg-red-600 text-white hover:bg-red-700 cursor-pointer"
+						: "bg-gray-400 text-gray-200 cursor-not-allowed"
+				}`}
+				disabled={addresses.length === 0}
 			>
-				XÁC NHẬN ĐẶT HÀNG
+				HOÀN TẤT ĐẶT HÀNG
 			</button>
 		</div>
 	);

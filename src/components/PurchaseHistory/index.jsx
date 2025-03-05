@@ -1,5 +1,6 @@
 import axios from "axios";
 import { Store, HelpCircle, TruckIcon } from "lucide-react";
+import { FaStar } from "react-icons/fa";
 import { useEffect, useState } from "react";
 import { formatPrice } from "../../utils/formatPrice";
 import { Link, useNavigate, useOutletContext } from "react-router";
@@ -8,11 +9,16 @@ import { formatDate } from "../../utils/formatDate";
 
 const PurchaseHistory = () => {
 	const [orderDetail, setOrderDetails] = useState(null);
-	const [isLoadingOrderDetail, setIsLoadingOrderDetail] = useState(false); // Loading khi state  chưa update
+	const [isLoadingOrderDetail, setIsLoadingOrderDetail] = useState(false);
 	const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
 	const [orderToDelete, setOrderToDelete] = useState(null);
+	const [showReviewModal, setShowReviewModal] = useState(false);
+	const [reviewOrder, setReviewOrder] = useState({});
+	const [reviews, setReviews] = useState({});
 
 	const userId = localStorage.getItem("userId");
+	const username = localStorage.getItem("username");
+
 	const navigate = useNavigate();
 
 	const { handleSmooth } = useOutletContext();
@@ -29,34 +35,25 @@ const PurchaseHistory = () => {
 			.then(
 				([orderRes, orderItemRes, skusRes, productsRes, imagesRes]) => {
 					const orders = orderRes.data;
-					// console.log("orders", orders);
 					const orderItems = orderItemRes.data;
-					// console.log("orderItems", orderItems);
 					const skus = skusRes.data;
-					// console.log("skus", skus);
 					const products = productsRes.data;
-					// console.log("products", products);
 					const images = imagesRes.data;
-					// console.log("images", images);
 
-					// Chuyển đổi dữ liệu thành object map để tra cứu nhanh
 					const skuMap = skus.reduce((acc, sku) => {
 						acc[sku.id] = sku;
 						return acc;
 					}, {});
-					// console.log("skuMap", skuMap);
 
 					const productMap = products.reduce((acc, product) => {
 						acc[product.id] = product;
 						return acc;
 					}, {});
-					// console.log("productMap", productMap);
 
 					const imageMap = images.reduce((acc, image) => {
 						acc[image.productId] = image;
 						return acc;
 					}, {});
-					// console.log("imageMap", imageMap);
 
 					// Nhóm các orderItems theo orderId
 					const ordersWithDetails = orders.map((order) => {
@@ -64,12 +61,10 @@ const PurchaseHistory = () => {
 							.filter((item) => item.orderId === order.id)
 							.map((item) => {
 								const sku = skuMap[item.product_SKUId] || {};
-								// console.log(sku);
+
 								const product =
 									productMap[sku.productId || sku.id] || {};
-								// console.log(product);
 								const image = imageMap[product.id] || {};
-								// console.log(image);
 
 								return {
 									...item,
@@ -130,6 +125,59 @@ const PurchaseHistory = () => {
 		setShowDeleteConfirmation(false);
 		setOrderToDelete(null);
 	};
+
+	const handleReviewClick = (order) => {
+		setReviewOrder(order);
+
+		const defaultReviews = order.orderItems.reduce((acc, item) => {
+			acc[item.id] = {
+				rating: 5,
+				productId: item.product.id,
+				order_ItemId: item.id,
+				userId: userId,
+				username: username,
+				orderId: order.id,
+				classify: `${item.sku.color}, ${item.sku.raM_ROM}`,
+				comment: "",
+			};
+			return acc;
+		}, {});
+
+		setReviews(defaultReviews);
+		setShowReviewModal(true);
+	};
+
+	const handleSubmit = async () => {
+		console.log(reviews);
+
+		try {
+			const reviewList = Object.values(reviews);
+			const response = await axios.post("/Reviews", reviewList);
+
+			if (response.status === 201) {
+				alert("Đánh giá đã được gửi thành công!");
+				setShowReviewModal(false);
+				setReviews({});
+			}
+		} catch (error) {
+			console.error("Lỗi khi gửi đánh giá:", error);
+			alert("Gửi đánh giá thất bại, vui lòng thử lại!");
+			setShowReviewModal(false);
+			setReviews({});
+		}
+	};
+
+	// const handleSubmit = async () => {
+	// 	try {
+	// 		await Promise.all(reviews.map((review) =>
+	// 			axios.post("/api/Reviews", { ...review, userId: localStorage.getItem("userId") })
+	// 		));
+	// 		alert("Cảm ơn bạn đã đánh giá!");
+	// 		onClose();
+	// 	} catch (error) {
+	// 		console.error("Lỗi khi gửi đánh giá:", error);
+	// 	}
+	// };
 
 	return (
 		<div className="container mx-auto px-4 py-8">
@@ -245,7 +293,8 @@ const PurchaseHistory = () => {
 														<p className="text-black opacity-25 line-through text-md">
 															{formatPrice(
 																item?.sku
-																	.defaultPrice
+																	.defaultPrice *
+																	item.quantity
 															)}
 														</p>
 														<p className="text-red-500">
@@ -279,9 +328,26 @@ const PurchaseHistory = () => {
 											{/* {order.ratingDeadline} */}
 										</div>
 										<div className="flex gap-2">
-											<button className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
-												Đánh Giá
-											</button>
+											{order?.status === 2 &&
+												(!order?.isRate ? (
+													<button
+														className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+														onClick={() =>
+															handleReviewClick(
+																order
+															)
+														}
+													>
+														Đánh Giá
+													</button>
+												) : (
+													<button
+														className="px-4 py-2 bg-gray-500 text-white rounded"
+														disabled
+													>
+														Đã Đánh Giá
+													</button>
+												))}
 											{order?.status === 0 &&
 												!order?.isPaid && ( // Nếu chưa thanh toán
 													<button
@@ -295,9 +361,9 @@ const PurchaseHistory = () => {
 														Yêu cầu hủy
 													</button>
 												)}
-											{/* <button className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 cursor-pointer">
+											<button className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 cursor-pointer">
 												Mua Lại
-											</button> */}
+											</button>
 										</div>
 									</div>
 								</div>
@@ -327,8 +393,8 @@ const PurchaseHistory = () => {
 							Xác nhận hủy đơn hàng
 						</h2>
 						<p className="mb-4">
-							Bạn có chắc chắn muốn hủy đơn hàng này?{" "}
-							{/* {orderToDelete}? */}
+							Bạn có chắc chắn muốn hủy đơn hàng này{" "}
+							{orderToDelete}?
 						</p>
 						<div className="flex justify-end space-x-2">
 							<button
@@ -342,6 +408,80 @@ const PurchaseHistory = () => {
 								onClick={handleConfirmModal}
 							>
 								Xóa
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
+
+			{showReviewModal && (
+				<div className="fixed inset-0 flex items-center justify-center backdrop-blur-md">
+					<div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full">
+						<h2 className="text-xl font-bold mb-4">
+							Đánh giá sản phẩm
+						</h2>
+						{reviewOrder.orderItems.map((item) => (
+							<div key={item.id} className="mb-4">
+								<h3 className="mb-2 font-bold">
+									{item.product.name}
+								</h3>
+								<div className="mb-2">
+									Phân loại hàng: {item.sku.color},{" "}
+									{item.sku.raM_ROM}
+								</div>
+								<div className="flex">
+									{[1, 2, 3, 4, 5].map((star) => (
+										<FaStar
+											key={star}
+											className={`cursor-pointer transition ${
+												(reviews[item.id]?.rating ||
+													0) >= star
+													? "text-yellow-400"
+													: "text-gray-300"
+											}`}
+											size={30}
+											onClick={() =>
+												setReviews((prev) => ({
+													...prev,
+													[item.id]: {
+														...prev[item.id],
+														rating: star,
+														productId:
+															item.product.id,
+													},
+												}))
+											}
+										/>
+									))}
+								</div>
+								<textarea
+									className="w-full p-2 border rounded mt-2"
+									placeholder="Nhập đánh giá..."
+									value={reviews[item.id]?.comment || ""}
+									onChange={(e) =>
+										setReviews((prev) => ({
+											...prev,
+											[item.id]: {
+												...prev[item.id],
+												comment: e.target.value,
+											},
+										}))
+									}
+								/>
+							</div>
+						))}
+						<div className="flex justify-end space-x-2 mt-4">
+							<button
+								className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
+								onClick={() => setShowReviewModal(false)}
+							>
+								Hủy
+							</button>
+							<button
+								className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+								onClick={handleSubmit}
+							>
+								Đánh Giá
 							</button>
 						</div>
 					</div>

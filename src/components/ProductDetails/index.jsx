@@ -16,6 +16,7 @@ export default function ProductDetails() {
 	const [product, setProduct] = useState({
 		images: [],
 		skus: [],
+		reviews: [],
 	});
 	const [selectedMemory, setSelectedMemory] = useState(null);
 	const [selectedColor, setSelectedColor] = useState(null);
@@ -28,27 +29,27 @@ export default function ProductDetails() {
 	const [modalType, setModalType] = useState("success"); // success or error
 	const token = localStorage.getItem("token");
 
+	const [currentPage, setCurrentPage] = useState(1);
+	const reviewsPerPage = 5;
+
 	useEffect(() => {
 		Promise.all([
 			axios.get("/Products/" + id),
 			axios.get("/Product_Image/getByProduct/" + id),
 			axios.get("/Product_SKU/getByProduct/" + id),
+			axios.get("/Reviews/getByProduct/" + id),
 		])
-			.then(([productsRes, imagesRes, skusRes]) => {
+			.then(([productsRes, imagesRes, skusRes, reviewsRes]) => {
 				const products = productsRes.data;
 				const images = imagesRes.data;
 				const skus = skusRes.data;
+				const reviews = reviewsRes.data;
+
 				const availableSkus = skus.filter(
 					(sku) => sku.quantity > 0 && sku.isAvailable
 				);
 
-				const mergedProduct = {
-					...products,
-					images: images,
-					skus: skus,
-				};
-
-				setProduct(mergedProduct);
+				setProduct({ ...products, images, skus, reviews });
 
 				if (availableSkus.length > 0) {
 					setSelectedMemory(availableSkus[0].raM_ROM);
@@ -58,6 +59,14 @@ export default function ProductDetails() {
 			})
 			.catch((error) => console.error("Error fetching data:", error));
 	}, [id]);
+
+	// Lấy đánh giá thuộc trang hiện tại
+	const indexOfLastReview = currentPage * reviewsPerPage;
+	const indexOfFirstReview = indexOfLastReview - reviewsPerPage;
+	const currentReviews = product.reviews.slice(
+		indexOfFirstReview,
+		indexOfLastReview
+	);
 
 	console.log(product);
 
@@ -427,48 +436,67 @@ export default function ProductDetails() {
 								))}
 							</div>
 						</div>
-
-						{/* Product Features */}
-						{/* <div className="space-y-4">
-							<h2 className="text-lg font-bold">
-								Đặc điểm nổi bật của iPhone 12
-							</h2>
-							<div
-								className={`space-y-2 overflow-hidden transition-all duration-300 ${
-									isExpanded ? "max-h-[200px]" : "max-h-30"
-								}`}
-							>
-								<h3 className="font-medium">
-									Thiết kế mỏng nhẹ, nhỏ gọn và đẳng cấp
-								</h3>
-								<p className="text-gray-700 text-sm">
-									iPhone 12 đã có sự đột phá về thiết kế với
-									kiểu dáng mới vuông vắn, mạnh mẽ và sang
-									trọng hơn. Không chỉ vậy, iPhone 12 mỏng hơn
-									11% và nhẹ hơn 16% so với thế hệ trước
-									iPhone 11. Lorem ipsum dolor sit amet
-									consectetur adipisicing elit. Iure adipisci
-									quibusdam atque error accusantium! Quia.
-									Lorem ipsum dolor sit amet consectetur
-									adipisicing elit. Quam est quisquam
-									veritatis? Nemo cum recusandae, optio error
-									corrupti ab amet!
-								</p>
-							</div>
-							<button
-								className="flex items-center gap-2 text-blue-600 hover:text-blue-700"
-								onClick={() => setIsExpanded(!isExpanded)}
-							>
-								{isExpanded ? "Thu gọn" : "Xem thêm"}
-								<ChevronDown
-									className={`transform transition-transform w-4 h-4 ${
-										isExpanded ? "rotate-180" : ""
-									}`}
-								/>
-							</button>
-						</div> */}
 					</div>
 				</div>
+			</div>
+			<div className="bg-white rounded-lg shadow-sm p-6 my-6">
+				<h3 className="text-lg font-bold mb-4">Đánh giá sản phẩm</h3>
+				{currentReviews.length > 0 ? (
+					<div className="space-y-4">
+						{currentReviews.map((review, index) => (
+							<div key={review.id} className="pb-4">
+								<p className="font-semibold">
+									{review.username}
+								</p>
+								<p className="text-yellow-500">
+									{"⭐".repeat(review.rating)}
+								</p>
+
+								<span className="text-gray-500 text-sm">
+									{new Date(review.createdAt).toLocaleString(
+										"vi-VN"
+									) +
+										" | Phân loại hàng: " +
+										review.classify}
+								</span>
+								<p className="text-gray-700">
+									{review.comment}
+								</p>
+								{index !== currentReviews.length - 1 && (
+									<hr className="mt-4 border-gray-300" />
+								)}
+							</div>
+						))}
+					</div>
+				) : (
+					<p className="text-gray-500">Chưa có đánh giá nào.</p>
+				)}
+
+				{/* Pagination Controls */}
+				{product.reviews.length > reviewsPerPage && (
+					<div className="flex justify-center space-x-4 mt-4">
+						<button
+							className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 disabled:opacity-50"
+							onClick={() => setCurrentPage(currentPage - 1)}
+							disabled={currentPage === 1}
+						>
+							Trước
+						</button>
+						<span className="px-4 py-2 font-semibold">
+							{currentPage} /{" "}
+							{Math.ceil(product.reviews.length / reviewsPerPage)}
+						</span>
+						<button
+							className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 disabled:opacity-50"
+							onClick={() => setCurrentPage(currentPage + 1)}
+							disabled={
+								indexOfLastReview >= product.reviews.length
+							}
+						>
+							Tiếp
+						</button>
+					</div>
+				)}
 			</div>
 		</div>
 	);
